@@ -5,8 +5,9 @@ import os
 
 mmtrExt = "*.1808168797"
 vsdfExt = "" #doesn't actually exist in DMC5 it seems, but will be useful for MHRise in the future
-outputPath = r"D:/DMC5/shaders"
-slimShaderPath = r"D:\MHW\slimshader\SlimShader.Studio.exe"
+outputPath = r"I:/DMC5/shaders/"
+slimShaderPath = r"I:\MHW\slimshader\SlimShader.Studio.exe"
+soloFilePath = r"I:\DMC5\re_chunk_000\natives\x64\mastermaterial\master\character_velvet_fur_8weight.mmtr.1808168797"
 
 def readString(f):
     return ''.join(iter(lambda: f.read(1).decode('ascii'), '\x00'))
@@ -16,11 +17,11 @@ def readShdr(file,stem):
     assert(file.read(4) == b'SDF\x00')
     groupCount = struct.unpack('H',file.read(2))[0]
     mainCount = struct.unpack('H',file.read(2))[0]
-    print(groupCount,mainCount)
+    #print(groupCount,mainCount)
     mainBCOff = file.read(8) #the actual parts use absolute offset, so this is kinda unnecessary
     for i in range(groupCount):
         for j in range(mainCount):
-            print(i,j)
+            #print(i,j)
             nameOff = struct.unpack('Q',file.read(8))[0]
             bytecodeOffs = []
             for _ in range(7):
@@ -41,7 +42,7 @@ def readShdr(file,stem):
     return shdrs
             
 def extractShdrs(extension):
-    for filePath in Path(r"D:\DMC5\re_chunk_000\natives\x64").rglob(extension):
+    for filePath in Path(r"I:\DMC5\re_chunk_000\natives\x64").rglob(extension):
         shdrfile = open(filePath,'rb')
         print(filePath.stem)
         shdrs = readShdr(shdrfile,filePath.stem)
@@ -51,9 +52,12 @@ def extractShdrs(extension):
             #print(shdrfile.tell(),shdr[0])
             shdrName = readString(shdrfile)
             #print(filePath.stem.split(".")[0],shdrName)
+            sdfName = filePath.stem.split(".")[0]
+            outDirectory = outputPath+"/"+sdfName+"/"
+            os.makedirs(outDirectory,exist_ok=True)
             for i in range(len(shdr[2])):
-                outPath = outputPath+"/"+filePath.stem.split(".")[0]+"-"+str(shdrName)+"-"+str(shdr[1])+"-"+str(i)+".shdr"
-                print(outPath)
+                outPath = outDirectory+sdfName+"-"+str(shdrName)+"-"+str(shdr[1])+"-"+str(i)+".shdr"
+                #print(outPath)
                 shdrfile.seek(shdr[2][i])
                 shdrData = shdrfile.read(shdr[3][i])
                 outShdr = open(outPath,'wb')
@@ -62,8 +66,35 @@ def extractShdrs(extension):
         shdrfile.close()
 
 def convertShdr():
-    os.chdir(outputPath)
-    subprocess.call([slimShaderPath,"*"])
+    dirs = os.listdir(outputPath)
+    for dir in dirs:
+        os.chdir(outputPath+dir)
+        subprocess.call([slimShaderPath,"*"])
 
-#extractShdrs(mmtrExt)
+def soloShdr(soloFile):
+    filePath = Path(soloFile)
+    shdrfile = open(filePath,'rb')
+    print(filePath.stem)
+    shdrs = readShdr(shdrfile,filePath.stem)
+    #print(shdrs)
+    for shdr in shdrs:
+        shdrfile.seek(shdr[0])
+        #print(shdrfile.tell(),shdr[0])
+        shdrName = readString(shdrfile)
+        #print(filePath.stem.split(".")[0],shdrName)
+        sdfName = filePath.stem.split(".")[0]           
+        outDirectory = outputPath+"/"+sdfName+"/"
+        os.makedirs(outDirectory,exist_ok=True)
+        for i in range(len(shdr[2])):
+            outPath = outDirectory+sdfName+"-"+str(shdrName)+"-"+str(shdr[1])+"-"+str(i)+".shdr"
+            #print(outPath)
+            shdrfile.seek(shdr[2][i])
+            shdrData = shdrfile.read(shdr[3][i])
+            outShdr = open(outPath,'wb')
+            outShdr.write(shdrData)
+            outShdr.close()
+    shdrfile.close()
+
+#soloShdr(soloFilePath)
+extractShdrs(mmtrExt)
 convertShdr()
