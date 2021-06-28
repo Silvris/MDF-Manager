@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Windows.Media;
 
 namespace MDF_Manager.Classes
 {
@@ -12,12 +15,42 @@ namespace MDF_Manager.Classes
             data = fData;
         }
     }
-    public class Float4
+    public class Float4 : INotifyPropertyChanged
     {
-        public float x { get; set; }
-        public float y { get; set; }
-        public float z { get; set; }
-        public float w { get; set; }
+        private Color _mColor;
+        private Brush _Brush;
+        private float _X;
+        private float _Y;
+        private float _Z;
+        private float _W;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public void UpdateBrush()
+        {
+            byte[] hexArray = { _mColor.R, _mColor.G, _mColor.B };
+            string hexBrush = "#" + BitConverter.ToString(hexArray).Replace("-", "");
+            mBrush = HelperFunctions.GetBrushFromHex(hexBrush);
+            OnPropertyChanged("mBrush");
+        }
+        public void UpdateColor()
+        {
+            _mColor.ScR = HelperFunctions.Clamp(x, 0, 1);
+            _mColor.ScG = HelperFunctions.Clamp(y, 0, 1);
+            _mColor.ScB = HelperFunctions.Clamp(z, 0, 1);
+            _mColor.ScA = HelperFunctions.Clamp(w, 0, 1);
+            UpdateBrush();
+        }
+        public float x { get => _X; set { _X = value; UpdateColor(); OnPropertyChanged("x"); } }
+        public float y { get => _Y; set { _Y = value; UpdateColor(); OnPropertyChanged("y"); } }
+        public float z { get => _Z; set { _Z = value; UpdateColor(); OnPropertyChanged("z"); } }
+        public float w { get => _W; set { _W = value; UpdateColor(); OnPropertyChanged("w"); } }
+        public Color mColor { get { return _mColor; } set { _mColor = value; UpdateBrush(); } }
+        public Brush mBrush { get { return _Brush; } set { _Brush = value; } }
         public Float4(float fX, float fY, float fZ, float fW)
         {
             x = fX;
@@ -25,34 +58,55 @@ namespace MDF_Manager.Classes
             z = fZ;
             w = fW;
         }
+
     }
-    interface IVariableProp
+    public interface IVariableProp
     {
-        public string name { get; set; }
-        public int size { get; set; }
-        public string type { get; set; }
-        public object defaultValue { get; set; }
+        string name { get; set; }
+        object value { get; set; }
+        int GetSize();
     }
     public class FloatProperty : IVariableProp
     {
         private string _Name;
-        private int _Size;//this isn't really important, but its good to keep for JSON purposes
-        private string _Type;
         private Float _Default;
         public string name { get => _Name; set => _Name = value; }
-        public int size { get => _Size; set => _Size = value; }
-        public string type { get => _Type; set => _Type = value; }
-        public object defaultValue { get => _Default; set => _Default = (Float)value; }
+        public object value { get => _Default; set => _Default = (Float)value; }
+        public FloatProperty(string Name, Float Value)
+        {
+            name = Name;
+            value = Value;
+        }
+        public int GetSize()
+        {
+            return 4;
+        }
     }
-    public class Float4Property : IVariableProp
+    public class Float4Property : IVariableProp, INotifyPropertyChanged
     {
         private string _Name;
-        private int _Size;//this isn't really important, but its good to keep for JSON purposes
-        private string _Type;
         private Float4 _Default;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
         public string name { get => _Name; set => _Name = value; }
-        public int size { get => _Size; set => _Size = value; }
-        public string type { get => _Type; set => _Type = value; }
-        public object defaultValue { get => _Default; set => _Default = (Float4)value; }
+        public object value { get => _Default; set { _Default = (Float4)value; OnPropertyChanged("value"); _Default.UpdateColor(); } }
+        public int[] indexes = new int[2];
+
+        public Float4Property(string Name, Float4 Value, int matIndex, int propIndex)
+        {
+            name = Name;
+            value = Value;
+            indexes[0] = matIndex;
+            indexes[1] = propIndex;
+        }
+        public int GetSize()
+        {
+            return 16;
+        }
     }
 }

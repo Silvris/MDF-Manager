@@ -1,0 +1,11 @@
+﻿<Window x:Class="MDF_Manager.ColorCanvas"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        Title="Color Picker" Height="400" Width="300">
+    <Grid>
+        <xctk:ColorCanvas x:Name="colorCanvas"/>
+        <TextBox MinWidth="100" MaxWidth="150" Height="20" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="30" Text="{Binding ElementName=colorCanvas, Path=HexadecimalString,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+        <Button MinWidth="100" MaxWidth="150" Height="25" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30" Content="Confirm" Click="Confirm"/>
+    </Grid>
+</Window> 

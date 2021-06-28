@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:MDF_Manager"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+
     </Application.Resources>
 </Application>

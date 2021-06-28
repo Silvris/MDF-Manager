@@ -3,10 +3,183 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:MDF_Manager"
+        xmlns:local="clr-namespace:MDF_Manager" 
+        xmlns:dragablz="http://dragablz.net/winfx/xaml/dragablz" 
+        xmlns:dockablz="http://dragablz.net/winfx/xaml/dockablz"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="MDF Manager" Background="#EEEEEE" MinHeight="800" MinWidth="1200" MaxHeight="1080" MaxWidth="1920">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Dragablz;component/Themes/Generic.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="{x:Type dragablz:TabablzControl}" x:Key="TabablzControlStyle">
+                <Setter Property="ItemsSource" Value="{Binding MDFs}" />
+                <Setter Property="ShowDefaultAddButton" Value="False" />
+                <Setter Property="ShowDefaultCloseButton" Value="True" />
+                <Setter Property="ItemContainerStyle" Value="{StaticResource TrapezoidDragableTabItemStyle}" />
+                <Setter Property="AdjacentHeaderItemOffset" Value="-10" />
+                <Setter Property="HeaderMemberPath" Value="Header" />
+                <EventSetter Event="Drop" Handler="TabablzControl_Drop"/>
+            </Style>
+            <DataTemplate x:Key="FloatPropItem">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Margin="20,0" Content="{Binding name}"/>
+                    <TextBox Grid.Column="1" Width="Auto" TextAlignment="Right" Text="{Binding value.data}"/>
+                </Grid>
+            </DataTemplate>
+            <DataTemplate x:Key="Float4PropItem">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Margin="20,0,0,0" Content="{Binding name}"/>
+                    <Border Grid.Column="1" Width="50" Height="20" BorderThickness="1" BorderBrush="Black" HorizontalAlignment="Center">
+                        <Rectangle MouseLeftButtonDown="ChangeColor" Fill="{Binding value.mBrush}"/>
+                    </Border>
+                    <TextBox Grid.Column="2" Margin="0,0,0,0" Width="Auto" TextAlignment="Right" Text="{Binding value.x,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBox Grid.Column="3" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Text="{Binding value.y,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBox Grid.Column="4" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Text="{Binding value.z,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBox Grid.Column="5" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Text="{Binding value.w,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                </Grid>
+            </DataTemplate>
+            <local:PropertySelect x:Key="PropertySelector" FloatTemplate="{StaticResource FloatPropItem}" Float4Template="{StaticResource Float4PropItem}"/>
+            <DataTemplate x:Key="MDFMain">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="2*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0"  Margin="0,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <ListBox x:Name="MatSelect" Grid.Column="0" SelectedIndex="0" Height="Auto" MinWidth="200" HorizontalAlignment="Stretch" Margin="40,10,10,10" ItemsSource="{Binding Path=Materials}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Label FontSize="10" Content="{Binding Name}"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <ListBox x:Name="TextureView" Grid.Column="1" Height="Auto" SelectedIndex="0" MinWidth="200" HorizontalAlignment="Stretch" Margin="40,10,10,10" ItemsSource="{Binding ElementName=MatSelect, Path=SelectedItem.Textures}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Label FontSize="10" Content="{Binding name}"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <Grid Grid.Column="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                            <Label HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10" Content="{Binding ElementName=TextureView, Path=SelectedItem.name}" ContentStringFormat="Texture Map: {0}"/>
+                            <Label HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,65" Content="Texture Path:"/>
+                            <TextBox HorizontalAlignment="Stretch" VerticalAlignment="Top" MinWidth="200" Margin="10,100" Text="{Binding ElementName=TextureView, Path=SelectedItem.path, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Row="1" Height="Auto" Width="Auto">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Rectangle Width="Auto" Height="2" Fill="#CCCCCC" Grid.Row="0" VerticalAlignment="Top" Grid.ColumnSpan="4" RadiusX="3" RadiusY="3" />
+                        <TextBox Grid.Row="0" Grid.Column="0" Height="25" VerticalAlignment="Center" Margin="15,0,0,0" Text="{Binding ElementName=MatSelect, Path=SelectedItem.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                            <Label Content="UTF16 MM3 Hash: "/>
+                            <Label Margin="5,0,0,0" Content="{Binding ElementName=MatSelect, Path=SelectedItem.UTF16Hash}" ContentStringFormat="0x{0:X8}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                            <Label Content="MasterMaterial Path: "/>
+                            <Label Margin="5,0,0,0" Content="{Binding ElementName=MatSelect, Path=SelectedItem.MasterMaterial}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label Content="Double Sided:"/>
+                            <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.DoubleSided, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label Content="Transparency:"/>
+                            <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.Transparency, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label Content="Bool 3:"/>
+                            <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.Bool3, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label Content="Single Sided:"/>
+                            <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.SingleSided, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label Content="Bool 5:"/>
+                            <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.Bool5, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label Content="Bool 6:"/>
+                            <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.Bool6, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label Content="Bool 7:"/>
+                            <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.Bool7, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label Content="Bool 8:"/>
+                            <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.Bool8, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <Rectangle Width="Auto" Height="2" Fill="#CCCCCC" Grid.Row="2" VerticalAlignment="Bottom" Grid.ColumnSpan="4" RadiusX="3" RadiusY="3" />
+                    </Grid>
+                    <ListBox Grid.Row="2" Margin="10,10" ItemsSource="{Binding ElementName=MatSelect, Path=SelectedItem.Properties}" ItemTemplateSelector="{StaticResource PropertySelector}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListBoxItem}">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </Grid>
 
+
+            </DataTemplate>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width=".4*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <Menu Height="20" Grid.ColumnSpan="2" Background="White" VerticalAlignment="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="Open" Click="OpenMDFFile"/>
+                <MenuItem Header="Save"/>
+                <MenuItem Header="Save As"/>
+                <MenuItem Header="Save All"/>
+            </MenuItem>
+            <MenuItem Header="Library">
+                <MenuItem Header="New Library File"/>
+                <MenuItem Header="Open Library File"/>
+                <MenuItem Header="Save Library File"/>
+                <MenuItem Header="Save Library File As"/>
+            </MenuItem>
+        </Menu>
+        <TreeView x:Name="LibraryView" Grid.Column="0" Margin="10,60,10,10"/>
+        <Label Content="Library" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,30,10,10"/>
+        <StackPanel Grid.Column="0" Width="Auto" Height="20" VerticalAlignment="Top" Margin="57,31,3,0" Orientation="Horizontal">
+            <Button Content="Add" Width="25" Height="15" FontSize="10" HorizontalAlignment="Left" Margin="0,2.5,0,0" VerticalAlignment="Top"/>
+            <Button Content="Remove" Width="40" Height="15" FontSize="10" HorizontalAlignment="Left" Margin="2.5,2.5,0,0" VerticalAlignment="Top"/>
+        </StackPanel>
+        <dragablz:TabablzControl AllowDrop="True" Grid.Column="1" x:Name="MaterialView" ItemsSource="{Binding MDFs}" ContentTemplate="{StaticResource MDFMain}" ShowDefaultCloseButton="True" Style="{StaticResource TabablzControlStyle}" Margin="8,30,8,8"/>
     </Grid>
 </Window>
