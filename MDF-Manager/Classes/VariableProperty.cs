@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Media;
@@ -62,28 +63,70 @@ namespace MDF_Manager.Classes
     }
     public interface IVariableProp
     {
+        int NameOffsetIndex { get; set; }
+        int ValOffset { get; set; }
         string name { get; set; }
         object value { get; set; }
+        int[] indexes { get; set; }
         int GetSize();
+        int GetPropHeaderSize();
+        void Export(BinaryWriter bw, MDFTypes type, ref long propHeadOff, ref long propOff, long basePropOff, long stringTableOff, List<int> strTableOffs);
     }
     public class FloatProperty : IVariableProp
     {
+        public int NameOffsetIndex { get; set; }
+        public int ValOffset { get; set; }
         private string _Name;
         private Float _Default;
         public string name { get => _Name; set => _Name = value; }
         public object value { get => _Default; set => _Default = (Float)value; }
-        public FloatProperty(string Name, Float Value)
+        public int[] indexes { get; set;}
+        public FloatProperty(string Name, Float Value,int matIndex, int propIndex)
         {
+            indexes = new int[2];
             name = Name;
             value = Value;
+            indexes[0] = matIndex;
+            indexes[1] = propIndex;
         }
         public int GetSize()
         {
             return 4;
         }
+        public int GetPropHeaderSize()
+        {
+            return 24;
+        }
+
+        public void Export(BinaryWriter bw, MDFTypes type, ref long propHeadOff, ref long propOff, long basePropOff, long stringTableOff, List<int> strTableOffs)
+        {
+            uint innerPropOff = (uint)(propOff - basePropOff);
+            bw.BaseStream.Seek(propHeadOff, SeekOrigin.Begin);
+            bw.Write(stringTableOff + strTableOffs[NameOffsetIndex]);
+            bw.Write(HelperFunctions.Murmur3Hash(Encoding.Unicode.GetBytes(name)));
+            bw.Write(HelperFunctions.Murmur3Hash(Encoding.ASCII.GetBytes(name)));//potentially UTF8 rather than ASCII, but further testing would be required
+            if(type >= MDFTypes.RE3)
+            {
+                bw.Write(innerPropOff);
+                bw.Write(1);
+            }
+            else
+            {
+                bw.Write(1);
+                bw.Write(innerPropOff);
+            }
+            //update propHeadOff then write value to floatarr
+            propHeadOff += GetPropHeaderSize();
+
+            bw.BaseStream.Seek(propOff, SeekOrigin.Begin);
+            bw.Write(_Default.data);
+            propOff += GetSize();
+        }
     }
     public class Float4Property : IVariableProp, INotifyPropertyChanged
     {
+        public int NameOffsetIndex { get; set; }
+        public int ValOffset { get; set; }
         private string _Name;
         private Float4 _Default;
 
@@ -95,18 +138,51 @@ namespace MDF_Manager.Classes
 
         public string name { get => _Name; set => _Name = value; }
         public object value { get => _Default; set { _Default = (Float4)value; OnPropertyChanged("value"); _Default.UpdateColor(); } }
-        public int[] indexes = new int[2];
+        public int[] indexes { get; set; }
 
         public Float4Property(string Name, Float4 Value, int matIndex, int propIndex)
         {
+            indexes = new int[2];
             name = Name;
             value = Value;
             indexes[0] = matIndex;
             indexes[1] = propIndex;
         }
+        public int GetPropHeaderSize()
+        {
+            return 24;
+        }
         public int GetSize()
         {
             return 16;
+        }
+
+        public void Export(BinaryWriter bw, MDFTypes type, ref long propHeadOff, ref long propOff, long basePropOff, long stringTableOff, List<int> strTableOffs)
+        {
+            uint innerPropOff = (uint)(propOff - basePropOff);
+            bw.BaseStream.Seek(propHeadOff, SeekOrigin.Begin);
+            bw.Write(stringTableOff + strTableOffs[NameOffsetIndex]);
+            bw.Write(HelperFunctions.Murmur3Hash(Encoding.Unicode.GetBytes(name)));
+            bw.Write(HelperFunctions.Murmur3Hash(Encoding.ASCII.GetBytes(name)));//potentially UTF8 rather than ASCII, but further testing would be required
+            if (type >= MDFTypes.RE3)
+            {
+                bw.Write(innerPropOff);
+                bw.Write(4);
+            }
+            else
+            {
+                bw.Write(4);
+                bw.Write(innerPropOff);
+            }
+            //update propHeadOff then write value to floatarr
+            propHeadOff += GetPropHeaderSize();
+
+            bw.BaseStream.Seek(propOff, SeekOrigin.Begin);
+            bw.Write(_Default.x);
+            bw.Write(_Default.y);
+            bw.Write(_Default.z);
+            bw.Write(_Default.w);
+            propOff += GetSize();
         }
     }
 }

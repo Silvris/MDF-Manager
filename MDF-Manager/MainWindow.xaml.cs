@@ -45,10 +45,42 @@ namespace MDF_Manager
                 readFile.Close();
             }
         }
+        private void Save(object sender, RoutedEventArgs e)
+        {
+            BinaryWriter bw = new BinaryWriter(new FileStream(MDFs[MaterialView.SelectedIndex].Header, FileMode.OpenOrCreate), Encoding.Unicode);
+            MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(MDFs[MaterialView.SelectedIndex].Header).Replace(".", ""));
+            MDFs[MaterialView.SelectedIndex].Export(bw, type);
+            bw.Close();
+        }
+        private void SaveAs(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog saveFile = new SaveFileDialog();
+            saveFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRise Material file (*.19)|*.19";
+            saveFile.FileName = System.IO.Path.GetFileName(MDFs[MaterialView.SelectedIndex].Header);
+            if (saveFile.ShowDialog() == true)
+            {
+                BinaryWriter bw = new BinaryWriter(new FileStream(saveFile.FileName, FileMode.OpenOrCreate), Encoding.Unicode);
+                MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(saveFile.FileName).Replace(".", ""));
+                MDFs[MaterialView.SelectedIndex].Export(bw, type);
+                bw.Close();
+                MDFs[MaterialView.SelectedIndex].Header = saveFile.FileName;
+            }
+        }
+
+        private void SaveAll(object sender, RoutedEventArgs e)
+        {
+            for(int i = 0; i < MDFs.Count; i++)
+            {
+                BinaryWriter bw = new BinaryWriter(new FileStream(MDFs[i].Header, FileMode.OpenOrCreate), Encoding.Unicode);
+                MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(MDFs[i].Header).Replace(".", ""));
+                MDFs[i].Export(bw, type);
+                bw.Close();
+            }
+        }
 
         private void TabablzControl_Drop(object sender, DragEventArgs e)
         {
-
+            //library dropping
         }
 
         private void ChangeColor(object sender, MouseButtonEventArgs e)
@@ -65,6 +97,8 @@ namespace MDF_Manager
                 MDFs[MaterialView.SelectedIndex].Materials[prop.indexes[0]].Properties[prop.indexes[1]].value = nFloat4;
             }
         }
+
+
     }
     public class PropertySelect : DataTemplateSelector
     {

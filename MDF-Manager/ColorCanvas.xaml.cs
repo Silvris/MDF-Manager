@@ -20,5 +20,10 @@ namespace MDF_Manager
             DialogResult = true;
             Close();
         }
+
+        private void ApplyColor(object sender, RoutedEventArgs e)
+        {
+            colorCanvas.HexadecimalString = ColorEntry.Text;
+        }
     }
 }

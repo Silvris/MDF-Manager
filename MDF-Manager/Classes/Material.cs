@@ -33,6 +33,8 @@ namespace MDF_Manager.Classes
     {
         private string _Name;
         private uint _Hash;
+        public int NameOffsetIndex; //applied and used only on export
+        public int MMOffsetIndex;
         private void UpdateHash()
         {
             _Hash = HelperFunctions.Murmur3Hash(Encoding.Unicode.GetBytes(_Name));
@@ -109,27 +111,39 @@ namespace MDF_Manager.Classes
                 case 1:
                     Float fData = new Float(br.ReadSingle());
                     br.BaseStream.Seek(EOP, SeekOrigin.Begin);
-                    return new FloatProperty(PropName, fData);
+                    return new FloatProperty(PropName, fData, matIndex, propIndex);
                 case 4:
                     Float4 f4Data = new Float4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
                     br.BaseStream.Seek(EOP, SeekOrigin.Begin);
                     return new Float4Property(PropName, f4Data, matIndex, propIndex);
                 default:
                     br.BaseStream.Seek(EOP, SeekOrigin.Begin);
-                    return new FloatProperty(Name, new Float((float)1.0));//shouldn't really come up ever
+                    return new FloatProperty(Name, new Float((float)1.0), matIndex, propIndex);//shouldn't really come up ever
 
             }
         }
 
-        public int GetSize()
+        public int GetSize(MDFTypes type)
         {
-            return 64;
+            int baseVal = 64;
+            if(type == MDFTypes.RE7)
+            {
+                baseVal += 8;
+            }
+            else if (type == MDFTypes.MHRise){
+                baseVal += 16;
+            }
+            return baseVal;
         }
 
         public Material(BinaryReader br,MDFTypes type,int matIndex)
         {
             Int64 MatNameOffset = br.ReadInt64();
             int MatNameHash = br.ReadInt32();//not storing, since it'll just be easier to export proper
+            if(type == MDFTypes.RE7)
+            {
+                Int64 unknRE7 = br.ReadInt64();//I don't own RE7 so I'm just gonna hope these are 0s
+            }
             int PropBlockSize = br.ReadInt32();
             int PropertyCount = br.ReadInt32();
             int TextureCount = br.ReadInt32();
@@ -239,6 +253,96 @@ namespace MDF_Manager.Classes
                 Properties.Add(ReadProperty(br,PropDataOff,type,matIndex,i));
             }
             br.BaseStream.Seek(EOM,SeekOrigin.Begin);
+        }
+        public byte GenerateAlphaFlags()
+        {
+            AlphaFlags flags = 0;
+            if (DoubleSided)
+            {
+                flags = flags | AlphaFlags.DoubleSided;
+            }
+            if (Transparency)
+            {
+                flags = flags | AlphaFlags.Transparency;
+            }
+            if (Bool3)
+            {
+                flags = flags | AlphaFlags.Unkn3;
+            }
+            if (SingleSided)
+            {
+                flags = flags | AlphaFlags.SingleSided;
+            }
+            if (Bool5)
+            {
+                flags = flags | AlphaFlags.Default5;
+            }
+            if (Bool6)
+            {
+                flags = flags | AlphaFlags.Unkn6;
+            }
+            if (Bool7)
+            {
+                flags = flags | AlphaFlags.Unkn7;
+            }
+            if (Bool8)
+            {
+                flags = flags | AlphaFlags.Default8;
+            }
+            return (byte)flags;
+        }
+        public void UpdateMaterialIndex(int index)
+        {
+            for(int i = 0; i < Properties.Count; i++)
+            {
+                Properties[i].indexes[0] = index;
+            }
+        }
+        public void Export(BinaryWriter bw, MDFTypes type, ref long materialOffset, ref long textureOffset, ref long propHeaderOffset, long stringTableOffset, List<int> strTableOffsets, ref long propertiesOffset)
+        {
+            bw.BaseStream.Seek(materialOffset,SeekOrigin.Begin);
+            bw.Write(stringTableOffset + strTableOffsets[NameOffsetIndex]);
+            bw.Write(HelperFunctions.Murmur3Hash(Encoding.Unicode.GetBytes(Name)));
+            if(type == MDFTypes.RE7)
+            {
+                bw.Write((long)0);
+            }
+            int propSize = 0;
+            for(int i = 0; i < Properties.Count; i++)
+            {
+                propSize += Properties[i].GetSize();
+            }
+            bw.Write(propSize);
+            bw.Write(Properties.Count);
+            bw.Write(Textures.Count);
+            if(type == MDFTypes.MHRise)
+            {
+                bw.Write((long)0);
+            }
+            bw.Write(ShaderType);
+            bw.Write(GenerateAlphaFlags());
+            bw.Write(Unkn1);
+            bw.Write(Unkn2);
+            bw.Write(Unkn3);
+            bw.Write(propHeaderOffset);
+            bw.Write(textureOffset);
+            if(type == MDFTypes.MHRise)
+            {
+                bw.Write(stringTableOffset);
+            }
+            bw.Write(propertiesOffset);
+            bw.Write(stringTableOffset + strTableOffsets[MMOffsetIndex]);
+            //end of actual material file, now update material offset and write textures/properties
+            materialOffset += GetSize(type);
+            for(int i = 0; i < Textures.Count; i++)
+            {
+                Textures[i].Export(bw, type, ref textureOffset, stringTableOffset, strTableOffsets);
+            }
+            long basePropOffset = propertiesOffset;//subtract by current prop offset to make inner offset
+            for(int i = 0; i < Properties.Count; i++)
+            {
+                Properties[i].Export(bw, type, ref propHeaderOffset, ref propertiesOffset, basePropOffset, stringTableOffset, strTableOffsets);
+            }
         }
     }
 }

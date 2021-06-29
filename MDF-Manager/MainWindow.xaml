@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MDF_Manager" 
         xmlns:dragablz="http://dragablz.net/winfx/xaml/dragablz" 
-        xmlns:dockablz="http://dragablz.net/winfx/xaml/dockablz"
+        xmlns:dockablz="http://dragablz.net/winfx/xaml/dockablz" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="MDF Manager" Background="#EEEEEE" MinHeight="800" MinWidth="1200" MaxHeight="1080" MaxWidth="1920">
     <Window.Resources>
@@ -21,6 +21,17 @@
                 <Setter Property="AdjacentHeaderItemOffset" Value="-10" />
                 <Setter Property="HeaderMemberPath" Value="Header" />
                 <EventSetter Event="Drop" Handler="TabablzControl_Drop"/>
+            </Style>
+            <Style x:Key="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}" TargetType="Label">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Label">
+                            <Border>
+                                <ContentPresenter RecognizesAccessKey="False"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
             <DataTemplate x:Key="FloatPropItem">
                 <Grid>
@@ -92,23 +103,27 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Rectangle Width="Auto" Height="2" Fill="#CCCCCC" Grid.Row="0" VerticalAlignment="Top" Grid.ColumnSpan="4" RadiusX="3" RadiusY="3" />
-                        <TextBox Grid.Row="0" Grid.Column="0" Height="25" VerticalAlignment="Center" Margin="15,0,0,0" Text="{Binding ElementName=MatSelect, Path=SelectedItem.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                        <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Rectangle Width="Auto" Height="2" Fill="#CCCCCC" Grid.Row="0" VerticalAlignment="Top" Grid.ColumnSpan="8" RadiusX="3" RadiusY="3" />
+                        <TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Height="25" VerticalAlignment="Center" Margin="15,0,0,0" Text="{Binding ElementName=MatSelect, Path=SelectedItem.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <StackPanel Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
                             <Label Content="UTF16 MM3 Hash: "/>
                             <Label Margin="5,0,0,0" Content="{Binding ElementName=MatSelect, Path=SelectedItem.UTF16Hash}" ContentStringFormat="0x{0:X8}"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                        <StackPanel Grid.Column="4" Grid.ColumnSpan="4" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal">
                             <Label Content="MasterMaterial Path: "/>
                             <Label Margin="5,0,0,0" Content="{Binding ElementName=MatSelect, Path=SelectedItem.MasterMaterial}"/>
                         </StackPanel>
-                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <StackPanel Grid.Row="1" Margin="10,0,0,0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <Label Content="Double Sided:"/>
                             <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.DoubleSided, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
@@ -124,23 +139,35 @@
                             <Label Content="Single Sided:"/>
                             <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.SingleSided, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
-                        <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <StackPanel Grid.Row="1" Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
                             <Label Content="Bool 5:"/>
                             <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.Bool5, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
-                        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <StackPanel Grid.Row="1" Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
                             <Label Content="Bool 6:"/>
                             <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.Bool6, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
-                        <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <StackPanel Grid.Row="1" Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
                             <Label Content="Bool 7:"/>
                             <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.Bool7, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
-                        <StackPanel Grid.Row="2" Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                        <StackPanel Grid.Row="1" Grid.Column="7" Margin="0,0,10,0" Orientation="Horizontal" VerticalAlignment="Center">
                             <Label Content="Bool 8:"/>
                             <CheckBox Margin="5,0,0,0" VerticalAlignment="Center" IsChecked="{Binding ElementName=MatSelect, Path=SelectedItem.Bool8, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
-                        <Rectangle Width="Auto" Height="2" Fill="#CCCCCC" Grid.Row="2" VerticalAlignment="Bottom" Grid.ColumnSpan="4" RadiusX="3" RadiusY="3" />
+                        <Grid Grid.Column="0" Grid.ColumnSpan="8" Grid.Row="2" Margin="10,0,10,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" HorizontalAlignment="Stretch" Height="20" Width="Auto" Margin="0,0,0,0" Text="{Binding ElementName=MatSelect, Path=SelectedItem.ShaderType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <xctk:IntegerUpDown Grid.Column="1" Maximum="255" Minimum="0" HorizontalAlignment="Stretch" Height="20" Width="Auto" Margin="10,0,0,0" Value="{Binding ElementName=MatSelect, Path=SelectedItem.Unkn1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <xctk:IntegerUpDown Grid.Column="2" Maximum="255" Minimum="0" HorizontalAlignment="Stretch" Height="20" Width="Auto" Margin="10,0,0,0" Value="{Binding ElementName=MatSelect, Path=SelectedItem.Unkn2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <xctk:IntegerUpDown Grid.Column="3" Maximum="255" Minimum="0" HorizontalAlignment="Stretch" Height="20" Width="Auto" Margin="10,0,0,0" Value="{Binding ElementName=MatSelect, Path=SelectedItem.Unkn3, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+                        <Rectangle Width="Auto" Height="2" Fill="#CCCCCC" Grid.Row="2" VerticalAlignment="Bottom" Grid.ColumnSpan="8" RadiusX="3" RadiusY="3" />
                     </Grid>
                     <ListBox Grid.Row="2" Margin="10,10" ItemsSource="{Binding ElementName=MatSelect, Path=SelectedItem.Properties}" ItemTemplateSelector="{StaticResource PropertySelector}">
                         <ListBox.ItemContainerStyle>
@@ -163,9 +190,9 @@
         <Menu Height="20" Grid.ColumnSpan="2" Background="White" VerticalAlignment="Top">
             <MenuItem Header="File">
                 <MenuItem Header="Open" Click="OpenMDFFile"/>
-                <MenuItem Header="Save"/>
-                <MenuItem Header="Save As"/>
-                <MenuItem Header="Save All"/>
+                <MenuItem Header="Save" Click="Save"/>
+                <MenuItem Header="Save As" Click="SaveAs"/>
+                <MenuItem Header="Save All" Click="SaveAll"/>
             </MenuItem>
             <MenuItem Header="Library">
                 <MenuItem Header="New Library File"/>
