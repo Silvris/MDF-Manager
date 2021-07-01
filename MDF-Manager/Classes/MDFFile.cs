@@ -1,20 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace MDF_Manager.Classes
 {
-    public class MDFFile
+    public class MDFFile : INotifyPropertyChanged
     {
-        public string Header { get; set; }
+        private string _Header;
+        public string Header { get => _Header; set { _Header = value; OnPropertyChanged("Header"); } }
         public string FileName = "";
         static byte[] magic = { (byte)'M', (byte)'D', (byte)'F', 0x00 };
         UInt16 unkn = 1;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
         public ObservableCollection<Material> Materials { get; set; }
 
         public MDFFile(string fileName, BinaryReader br, MDFTypes types)
