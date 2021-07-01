@@ -326,6 +326,23 @@ namespace MDF_Manager
             string jsontxt = JsonSerializer.Serialize(defs);
             File.WriteAllText("defs.json",jsontxt);
         }
+
+        private void TextBox_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            //disabling this until I figure out how to lock the scrollbar when scrolling over textbox
+            TextBox send = (TextBox)sender;
+            float currentVal = Convert.ToSingle(send.Text);
+            if (e.Delta > 0)
+            {
+                send.Text = Convert.ToString(currentVal + 1);
+            }
+            else if(e.Delta < 0)
+            {
+                send.Text = Convert.ToString(currentVal - 1);
+            }
+            
+            sender = send;
+        }
     }
     public class PropertySelect : DataTemplateSelector
     {
