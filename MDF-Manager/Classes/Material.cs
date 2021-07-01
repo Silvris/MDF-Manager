@@ -11,14 +11,58 @@ namespace MDF_Manager.Classes
     public enum AlphaFlags
     {
         None = 0,
-        DoubleSided = 1,
-        Transparency = 2,
-        Unkn3 = 4,
-        SingleSided = 8,
-        Default5 = 16,
-        Unkn6 = 32,
-        Unkn7 = 64,
-        Default8 = 128
+        BaseTwoSideEnable = 1,
+        BaseAlphaTestEnable = 2,
+        ShadowCastDisable = 4,
+        VertexShaderUsed = 8,
+        EmissiveUsed = 16,
+        TessellationEnable = 32,
+        EnableIgnoreDepth = 64,
+        AlphaMaskUsed = 128
+    }
+    [Flags]
+    public enum Flags2
+    {
+        None = 0,
+        ForcedTwoSideEnable = 1,
+        TwoSideEnable = 2
+    }
+    [Flags]
+    public enum Flags3
+    {
+        None = 0,
+        RoughTransparentEnable = 1,
+        ForcedAlphaTestEnable = 2,
+        AlphaTestEnable = 4,
+        SSSProfileUsed = 8,
+        EnableStencilPriority = 16,
+        RequireDualQuaternion = 32,
+        PixelDepthOffsetUsed = 64,
+        NoRayTracing = 128
+    }
+
+    public enum ShadingType
+    {
+        Standard = 0,
+        Decal = 1,
+        DecalWithMetallic = 2,
+        DecalNRMR = 3,
+        Transparent = 4,
+        Distortion = 5,
+        PrimitiveMesh = 6,
+        PrimitiveSolidMesh = 7,
+        Water = 8,
+        SpeedTree = 9,
+        GUI = 10,
+        GUIMesh = 11,
+        GUIMeshTransparent = 12,
+        ExpensiveTransparent =13,
+        Forward = 14,
+        RenderTarget = 15,
+        PostProcess = 16,
+        PrimitiveMaterial = 17,
+        PrimitiveSolidMaterial = 18,
+        SpineMaterial = 19
     }
 
     public enum MDFTypes
@@ -35,6 +79,7 @@ namespace MDF_Manager.Classes
         private uint _Hash;
         public int NameOffsetIndex; //applied and used only on export
         public int MMOffsetIndex;
+        public int materialIndex; //used for deleting and adding new
         private void UpdateHash()
         {
             _Hash = HelperFunctions.Murmur3Hash(Encoding.Unicode.GetBytes(_Name));
@@ -43,18 +88,27 @@ namespace MDF_Manager.Classes
         public string Name { get => _Name; set { _Name = value; OnPropertyChanged("Name"); UpdateHash(); } }
         public uint UTF16Hash { get => _Hash; set => _Hash = value; }
         public string MasterMaterial { get; set; }
-        public int ShaderType { get; set; }
-        public byte Unkn1 { get; set; }
-        public byte Unkn2 { get; set; }
-        public byte Unkn3 { get; set; }
-        public bool DoubleSided { get; set; }
-        public bool Transparency { get; set; }
-        public bool Bool3 { get; set; }
-        public bool SingleSided { get; set; }
-        public bool Bool5 { get; set; }
-        public bool Bool6 { get; set; }
-        public bool Bool7 { get; set; }
-        public bool Bool8 { get; set; }
+        public ShadingType ShaderType { get; set; }
+        public byte TessFactor { get; set; }
+        public byte PhongFactor { get; set; }//shrug bytes are unsigned by default in C#
+        public bool BaseTwoSideEnable { get; set; }
+        public bool BaseAlphaTestEnable { get; set; }
+        public bool ShadowCastDisable { get; set; }
+        public bool VertexShaderUsed { get; set; }
+        public bool EmissiveUsed { get; set; }
+        public bool TessellationEnable { get; set; }
+        public bool EnableIgnoreDepth { get; set; }
+        public bool AlphaMaskUsed { get; set; }
+        public bool ForcedTwoSideEnable { get; set; }
+        public bool TwoSideEnable { get; set; }
+        public bool RoughTransparentEnable { get; set; }
+        public bool ForcedAlphaTestEnable { get; set; }
+        public bool AlphaTestEnable { get; set; }
+        public bool SSSProfileUsed { get; set; }
+        public bool EnableStencilPriority { get; set; }
+        public bool RequireDualQuaternion { get; set; }
+        public bool PixelDepthOffsetUsed { get; set; }
+        public bool NoRayTracing { get; set; }
         public List<TextureBinding> Textures { get; set; }
         public List<IVariableProp> Properties { get; set; }
 
@@ -136,8 +190,168 @@ namespace MDF_Manager.Classes
             return baseVal;
         }
 
+        public void GetAlphaFlagsFromByte(byte flags)
+        {
+            AlphaFlags alphaFlags = (AlphaFlags)flags;
+            if ((alphaFlags & AlphaFlags.BaseTwoSideEnable) == AlphaFlags.BaseTwoSideEnable)
+            {
+                BaseTwoSideEnable = true;
+            }
+            else
+            {
+                BaseTwoSideEnable = false;
+            }
+            if ((alphaFlags & AlphaFlags.BaseAlphaTestEnable) == AlphaFlags.BaseAlphaTestEnable)
+            {
+                BaseAlphaTestEnable = true;
+            }
+            else
+            {
+                BaseAlphaTestEnable = false;
+            }
+            if ((alphaFlags & AlphaFlags.ShadowCastDisable) == AlphaFlags.ShadowCastDisable)
+            {
+                ShadowCastDisable = true;
+            }
+            else
+            {
+                ShadowCastDisable = false;
+            }
+            if ((alphaFlags & AlphaFlags.VertexShaderUsed) == AlphaFlags.VertexShaderUsed)
+            {
+                VertexShaderUsed = true;
+            }
+            else
+            {
+                VertexShaderUsed = false;
+            }
+            if ((alphaFlags & AlphaFlags.EmissiveUsed) == AlphaFlags.EmissiveUsed)
+            {
+                EmissiveUsed = true;
+            }
+            else
+            {
+                EmissiveUsed = false;
+            }
+            if ((alphaFlags & AlphaFlags.TessellationEnable) == AlphaFlags.TessellationEnable)
+            {
+                TessellationEnable = true;
+            }
+            else
+            {
+                TessellationEnable = false;
+            }
+            if ((alphaFlags & AlphaFlags.EnableIgnoreDepth) == AlphaFlags.EnableIgnoreDepth)
+            {
+                EnableIgnoreDepth = true;
+            }
+            else
+            {
+                EnableIgnoreDepth = false;
+            }
+            if ((alphaFlags & AlphaFlags.AlphaMaskUsed) == AlphaFlags.AlphaMaskUsed)
+            {
+                AlphaMaskUsed = true;
+            }
+            else
+            {
+                AlphaMaskUsed = false;
+            }
+        }
+
+        public byte GetFlags2FromByte(byte flags)
+        {
+            Flags2 flagVals = (Flags2)flags;
+            if ((flagVals & Flags2.ForcedTwoSideEnable) == Flags2.ForcedTwoSideEnable)
+            {
+                ForcedTwoSideEnable = true;
+            }
+            else
+            {
+                ForcedTwoSideEnable = false;
+            }
+            if ((flagVals & Flags2.TwoSideEnable) == Flags2.TwoSideEnable)
+            {
+                TwoSideEnable = true;
+            }
+            else
+            {
+                TwoSideEnable = false;
+            }
+            return (byte)(flags >> 2);
+        }
+        public void GetFlags3FromByte(byte flags)
+        {
+            Flags3 alphaFlags = (Flags3)flags;
+            if ((alphaFlags & Flags3.RoughTransparentEnable) == Flags3.RoughTransparentEnable)
+            {
+                RoughTransparentEnable = true;
+            }
+            else
+            {
+                RoughTransparentEnable = false;
+            }
+            if ((alphaFlags & Flags3.ForcedAlphaTestEnable) == Flags3.ForcedAlphaTestEnable)
+            {
+                ForcedAlphaTestEnable = true;
+            }
+            else
+            {
+                ForcedAlphaTestEnable = false;
+            }
+            if ((alphaFlags & Flags3.AlphaTestEnable) == Flags3.AlphaTestEnable)
+            {
+                AlphaTestEnable = true;
+            }
+            else
+            {
+                AlphaTestEnable = false;
+            }
+            if ((alphaFlags & Flags3.SSSProfileUsed) == Flags3.SSSProfileUsed)
+            {
+                SSSProfileUsed = true;
+            }
+            else
+            {
+                SSSProfileUsed = false;
+            }
+            if ((alphaFlags & Flags3.EnableStencilPriority) == Flags3.EnableStencilPriority)
+            {
+                EnableStencilPriority = true;
+            }
+            else
+            {
+                EnableStencilPriority = false;
+            }
+            if ((alphaFlags & Flags3.RequireDualQuaternion) == Flags3.RequireDualQuaternion)
+            {
+                RequireDualQuaternion = true;
+            }
+            else
+            {
+                RequireDualQuaternion = false;
+            }
+            if ((alphaFlags & Flags3.PixelDepthOffsetUsed) == Flags3.PixelDepthOffsetUsed)
+            {
+                PixelDepthOffsetUsed = true;
+            }
+            else
+            {
+                PixelDepthOffsetUsed = false;
+            }
+            if ((alphaFlags & Flags3.NoRayTracing) == Flags3.NoRayTracing)
+            {
+                NoRayTracing = true;
+            }
+            else
+            {
+                NoRayTracing = false;
+            }
+        }
+
         public Material(BinaryReader br,MDFTypes type,int matIndex)
         {
+            materialIndex = matIndex;
             Int64 MatNameOffset = br.ReadInt64();
             int MatNameHash = br.ReadInt32();//not storing, since it'll just be easier to export proper
             if(type == MDFTypes.RE7)
@@ -151,75 +365,11 @@ namespace MDF_Manager.Classes
             {
                 br.ReadInt64();
             }
-            ShaderType = br.ReadInt32();
-            AlphaFlags alphaFlags = (AlphaFlags)br.ReadByte();
-            if((alphaFlags & AlphaFlags.DoubleSided) == AlphaFlags.DoubleSided)
-            {
-                DoubleSided = true;
-            }
-            else
-            {
-                DoubleSided = false;
-            }
-            if ((alphaFlags & AlphaFlags.Transparency) == AlphaFlags.Transparency)
-            {
-                Transparency = true;
-            }
-            else
-            {
-                Transparency = false;
-            }
-            if ((alphaFlags & AlphaFlags.Unkn3) == AlphaFlags.Unkn3)
-            {
-                Bool3 = true;
-            }
-            else
-            {
-                Bool3 = false;
-            }
-            if ((alphaFlags & AlphaFlags.SingleSided) == AlphaFlags.SingleSided)
-            {
-                SingleSided = true;
-            }
-            else
-            {
-                SingleSided = false;
-            }
-            if ((alphaFlags & AlphaFlags.Default5) == AlphaFlags.Default5)
-            {
-                Bool5 = true;
-            }
-            else
-            {
-                Bool5 = false;
-            }
-            if ((alphaFlags & AlphaFlags.Unkn6) == AlphaFlags.Unkn6)
-            {
-                Bool6 = true;
-            }
-            else
-            {
-                Bool6 = false;
-            }
-            if ((alphaFlags & AlphaFlags.Unkn7) == AlphaFlags.Unkn7)
-            {
-                Bool7 = true;
-            }
-            else
-            {
-                Bool7 = false;
-            }
-            if ((alphaFlags & AlphaFlags.Default8) == AlphaFlags.Default8)
-            {
-                Bool8 = true;
-            }
-            else
-            {
-                Bool8 = false;
-            }
-            Unkn1 = br.ReadByte();
-            Unkn2 = br.ReadByte();
-            Unkn3 = br.ReadByte();
+            ShaderType = (ShadingType)br.ReadInt32();
+            GetAlphaFlagsFromByte(br.ReadByte());
+            TessFactor = GetFlags2FromByte(br.ReadByte());
+            PhongFactor = br.ReadByte();
+            GetFlags3FromByte(br.ReadByte());
             Int64 PropHeadersOff = br.ReadInt64();
             Int64 TexHeadersOff = br.ReadInt64();
             if(type == MDFTypes.MHRise)
@@ -257,42 +407,95 @@ namespace MDF_Manager.Classes
         public byte GenerateAlphaFlags()
         {
             AlphaFlags flags = 0;
-            if (DoubleSided)
+            if (BaseTwoSideEnable)
             {
-                flags = flags | AlphaFlags.DoubleSided;
+                flags = flags | AlphaFlags.BaseTwoSideEnable;
             }
-            if (Transparency)
+            if (BaseAlphaTestEnable)
             {
-                flags = flags | AlphaFlags.Transparency;
+                flags = flags | AlphaFlags.BaseAlphaTestEnable;
             }
-            if (Bool3)
+            if (ShadowCastDisable)
             {
-                flags = flags | AlphaFlags.Unkn3;
+                flags = flags | AlphaFlags.ShadowCastDisable;
             }
-            if (SingleSided)
+            if (VertexShaderUsed)
             {
-                flags = flags | AlphaFlags.SingleSided;
+                flags = flags | AlphaFlags.VertexShaderUsed;
             }
-            if (Bool5)
+            if (EmissiveUsed)
             {
-                flags = flags | AlphaFlags.Default5;
+                flags = flags | AlphaFlags.EmissiveUsed;
             }
-            if (Bool6)
+            if (TessellationEnable)
             {
-                flags = flags | AlphaFlags.Unkn6;
+                flags = flags | AlphaFlags.TessellationEnable;
             }
-            if (Bool7)
+            if (EnableIgnoreDepth)
             {
-                flags = flags | AlphaFlags.Unkn7;
+                flags = flags | AlphaFlags.EnableIgnoreDepth;
             }
-            if (Bool8)
+            if (AlphaMaskUsed)
             {
-                flags = flags | AlphaFlags.Default8;
+                flags = flags | AlphaFlags.AlphaMaskUsed;
+            }
+            return (byte)flags;
+        }
+        public byte GenerateFlags2()
+        {
+            Flags2 flags = 0;
+            if (ForcedTwoSideEnable)
+            {
+                flags = flags | Flags2.ForcedTwoSideEnable;
+            }
+            if (TwoSideEnable)
+            {
+                flags = flags | Flags2.TwoSideEnable;
+            }
+            byte finalVal = (byte)(TessFactor << 2);
+            finalVal = (byte)(finalVal | (byte)flags);
+            return finalVal;
+        }
+        public byte GenerateFlags3()
+        {
+            Flags3 flags = 0;
+            if (RoughTransparentEnable)
+            {
+                flags = flags | Flags3.RoughTransparentEnable;
+            }
+            if (ForcedAlphaTestEnable)
+            {
+                flags = flags | Flags3.ForcedAlphaTestEnable;
+            }
+            if (AlphaTestEnable)
+            {
+                flags = flags | Flags3.AlphaTestEnable;
+            }
+            if (SSSProfileUsed)
+            {
+                flags = flags | Flags3.SSSProfileUsed;
+            }
+            if (EnableStencilPriority)
+            {
+                flags = flags | Flags3.EnableStencilPriority;
+            }
+            if (RequireDualQuaternion)
+            {
+                flags = flags | Flags3.RequireDualQuaternion;
+            }
+            if (PixelDepthOffsetUsed)
+            {
+                flags = flags | Flags3.PixelDepthOffsetUsed;
+            }
+            if (NoRayTracing)
+            {
+                flags = flags | Flags3.NoRayTracing;
             }
             return (byte)flags;
         }
         public void UpdateMaterialIndex(int index)
         {
+            materialIndex = index;
             for(int i = 0; i < Properties.Count; i++)
             {
                 Properties[i].indexes[0] = index;
@@ -319,11 +522,11 @@ namespace MDF_Manager.Classes
             {
                 bw.Write((long)0);
             }
-            bw.Write(ShaderType);
+            bw.Write((uint)ShaderType);
             bw.Write(GenerateAlphaFlags());
-            bw.Write(Unkn1);
-            bw.Write(Unkn2);
-            bw.Write(Unkn3);
+            bw.Write(GenerateFlags2());
+            bw.Write(PhongFactor);
+            bw.Write(GenerateFlags3());
             bw.Write(propHeaderOffset);
             bw.Write(textureOffset);
             if(type == MDFTypes.MHRise)

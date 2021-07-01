@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,11 +15,11 @@ namespace MDF_Manager.Classes
         public string FileName = "";
         static byte[] magic = { (byte)'M', (byte)'D', (byte)'F', 0x00 };
         UInt16 unkn = 1;
-        public List<Material> Materials { get; set; }
+        public ObservableCollection<Material> Materials { get; set; }
 
         public MDFFile(string fileName, BinaryReader br, MDFTypes types)
         {
-            Materials = new List<Material>();
+            Materials = new ObservableCollection<Material>();
             Header = fileName;
             FileName = fileName;
             byte[] mBytes = br.ReadBytes(4);
@@ -170,6 +171,13 @@ namespace MDF_Manager.Classes
             for (int i = 0; i < Materials.Count; i++)
             {
                 Materials[i].Export(bw,type, ref materialOffset, ref textureOffset, ref propHeadersOffset, stringTableOffset, strTableOffsets, ref propertiesOffset);
+            }
+        }
+        public static IList<ShadingType> ShadingTypes
+        {
+            get
+            {
+                return Enum.GetValues(typeof(ShadingType)).Cast<ShadingType>().ToList<ShadingType>();
             }
         }
     }
