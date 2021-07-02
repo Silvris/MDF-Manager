@@ -54,10 +54,14 @@ namespace MDF_Manager
             {
                 for(int i = 0; i < defs.lastOpenFiles.Count; i++)
                 {
-                    BinaryReader readFile = new BinaryReader(new FileStream(defs.lastOpenFiles[i], FileMode.Open), Encoding.Unicode);
-                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(defs.lastOpenFiles[i]).Replace(".", ""));
-                    MDFs.Add(new MDFFile(defs.lastOpenFiles[i], readFile, type));
-                    readFile.Close();
+                    if (File.Exists(defs.lastOpenFiles[i]))
+                    {
+                        BinaryReader readFile = new BinaryReader(new FileStream(defs.lastOpenFiles[i], FileMode.Open), Encoding.Unicode);
+                        MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(defs.lastOpenFiles[i]).Replace(".", ""));
+                        MDFs.Add(new MDFFile(defs.lastOpenFiles[i], readFile, type));
+                        readFile.Close();
+                    }
+
                 }
             }
             InitializeComponent();
