@@ -109,44 +109,53 @@ namespace MDF_Manager
         }
         private void Save(object sender, RoutedEventArgs e)
         {
-            if (!CheckMaterialNames(MaterialView.SelectedIndex))
+            if(MDFs.Count > 0)
             {
-                MessageBox.Show("Material names cannot be identical!");
+                if (!CheckMaterialNames(MaterialView.SelectedIndex))
+                {
+                    MessageBox.Show("Material names cannot be identical!");
+                }
+                else
+                {
+                    BinaryWriter bw = new BinaryWriter(new FileStream(MDFs[MaterialView.SelectedIndex].Header, FileMode.OpenOrCreate), Encoding.Unicode);
+                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(MDFs[MaterialView.SelectedIndex].Header).Replace(".", ""));
+                    MDFs[MaterialView.SelectedIndex].Export(bw, type);
+                    bw.Close();
+                }
             }
-            else
-            {
-                BinaryWriter bw = new BinaryWriter(new FileStream(MDFs[MaterialView.SelectedIndex].Header, FileMode.OpenOrCreate), Encoding.Unicode);
-                MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(MDFs[MaterialView.SelectedIndex].Header).Replace(".", ""));
-                MDFs[MaterialView.SelectedIndex].Export(bw, type);
-                bw.Close();
-            }
+
 
         }
         private void SaveAs(object sender, RoutedEventArgs e)
         {
-            if (!CheckMaterialNames(MaterialView.SelectedIndex))
+            if(MDFs.Count > 0)
             {
-                MessageBox.Show("Material names cannot be identical!");
-            }
-            else
-            {
-                SaveFileDialog saveFile = new SaveFileDialog();
-                saveFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRise Material file (*.19)|*.19";
-                saveFile.FileName = System.IO.Path.GetFileName(MDFs[MaterialView.SelectedIndex].Header);
-                if (saveFile.ShowDialog() == true)
+                if (!CheckMaterialNames(MaterialView.SelectedIndex))
                 {
-                    BinaryWriter bw = new BinaryWriter(new FileStream(saveFile.FileName, FileMode.OpenOrCreate), Encoding.Unicode);
-                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(saveFile.FileName).Replace(".", ""));
-                    MDFs[MaterialView.SelectedIndex].Export(bw, type);
-                    bw.Close();
-                    MDFs[MaterialView.SelectedIndex].Header = saveFile.FileName;
+                    MessageBox.Show("Material names cannot be identical!");
+                }
+                else
+                {
+                    SaveFileDialog saveFile = new SaveFileDialog();
+                    saveFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRise Material file (*.19)|*.19";
+                    saveFile.FileName = System.IO.Path.GetFileName(MDFs[MaterialView.SelectedIndex].Header);
+                    if (saveFile.ShowDialog() == true)
+                    {
+                        BinaryWriter bw = new BinaryWriter(new FileStream(saveFile.FileName, FileMode.OpenOrCreate), Encoding.Unicode);
+                        MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(saveFile.FileName).Replace(".", ""));
+                        MDFs[MaterialView.SelectedIndex].Export(bw, type);
+                        bw.Close();
+                        MDFs[MaterialView.SelectedIndex].Header = saveFile.FileName;
+                    }
                 }
             }
+
 
         }
 
         private void SaveAll(object sender, RoutedEventArgs e)
         {
+            //this one doesn't actually need a check, since the for loop will just immediately end if MDFs.Count = 0
             for(int i = 0; i < MDFs.Count; i++)
             {
                 if (!CheckMaterialNames(i))
@@ -189,25 +198,29 @@ namespace MDF_Manager
             //library dropping
             if (e.Data.GetDataPresent(typeof(LibraryEntry)))
             {
-                LibraryEntry entry = (LibraryEntry)e.Data.GetData(typeof(LibraryEntry));
-                BinaryReader readFile = new BinaryReader(new FileStream(entry.MDFPath, FileMode.Open), Encoding.Unicode);
-                MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(entry.MDFPath).Replace(".", ""));
-                MDFFile donor = new MDFFile(entry.MDFPath, readFile, type);
-                readFile.Close();
-                Material newMat = null;
-                for (int i = 0; i < donor.Materials.Count; i++)
+                if(MDFs.Count > 0)
                 {
-                    //the only flaw of ObvservableCollection is lack of Find(), which is fine since we can get around it
-                    if (donor.Materials[i].Name == entry.MaterialName)
+                    LibraryEntry entry = (LibraryEntry)e.Data.GetData(typeof(LibraryEntry));
+                    BinaryReader readFile = new BinaryReader(new FileStream(entry.MDFPath, FileMode.Open), Encoding.Unicode);
+                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(entry.MDFPath).Replace(".", ""));
+                    MDFFile donor = new MDFFile(entry.MDFPath, readFile, type);
+                    readFile.Close();
+                    Material newMat = null;
+                    for (int i = 0; i < donor.Materials.Count; i++)
                     {
-                        newMat = donor.Materials[i];
+                        //the only flaw of ObvservableCollection is lack of Find(), which is fine since we can get around it
+                        if (donor.Materials[i].Name == entry.MaterialName)
+                        {
+                            newMat = donor.Materials[i];
+                        }
+                    }
+                    if (newMat != null)
+                    {
+                        MDFs[MaterialView.SelectedIndex].Materials.Add(newMat);
+                        UpdateMaterials();
                     }
                 }
-                if (newMat != null)
-                {
-                    MDFs[MaterialView.SelectedIndex].Materials.Add(newMat);
-                    UpdateMaterials();
-                }
+
             }
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {

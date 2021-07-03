@@ -23,7 +23,14 @@ namespace MDF_Manager
 
         private void ApplyColor(object sender, RoutedEventArgs e)
         {
-            colorCanvas.HexadecimalString = ColorEntry.Text;
+            try
+            {
+                colorCanvas.HexadecimalString = ColorEntry.Text;
+            }
+            catch (System.IO.InvalidDataException)
+            {
+                MessageBox.Show("Invalid color!");
+            }
         }
     }
 }
