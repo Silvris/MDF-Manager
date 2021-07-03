@@ -57,7 +57,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Margin="20,0" Content="{Binding name}"/>
-                    <TextBox Grid.Column="1" Width="Auto" TextAlignment="Right" Text="{Binding value.data,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <xctk:SingleUpDown Grid.Column="1" ShowButtonSpinner="False" Width="Auto" TextAlignment="Right" Value="{Binding value.data,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
             </DataTemplate>
             <DataTemplate x:Key="Float4PropItem">
@@ -74,10 +74,10 @@
                     <Border Grid.Column="1" Width="50" Height="20" BorderThickness="1" BorderBrush="Black" HorizontalAlignment="Center">
                         <Rectangle MouseLeftButtonDown="ChangeColor" Fill="{Binding value.mBrush}"/>
                     </Border>
-                    <TextBox Grid.Column="2" Margin="0,0,0,0" Width="Auto" TextAlignment="Right" Text="{Binding value.x,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
-                    <TextBox Grid.Column="3" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Text="{Binding value.y,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
-                    <TextBox Grid.Column="4" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Text="{Binding value.z,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
-                    <TextBox Grid.Column="5" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Text="{Binding value.w,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <xctk:SingleUpDown Grid.Column="2" ShowButtonSpinner="False" Margin="0,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.x,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <xctk:SingleUpDown Grid.Column="3" ShowButtonSpinner="False" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.y,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <xctk:SingleUpDown Grid.Column="4" ShowButtonSpinner="False" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.z,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <xctk:SingleUpDown Grid.Column="5" ShowButtonSpinner="False" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.w,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
             </DataTemplate>
             <local:PropertySelect x:Key="PropertySelector" FloatTemplate="{StaticResource FloatPropItem}" Float4Template="{StaticResource Float4PropItem}"/>
@@ -135,7 +135,7 @@
                             <Label Content="UTF16 MM3 Hash: "/>
                             <Label Margin="5,0,0,0" Content="{Binding ElementName=MatSelect, Path=SelectedItem.UTF16Hash}" ContentStringFormat="0x{0:X8}"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="4" Grid.ColumnSpan="4" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                        <StackPanel Grid.Column="4" Grid.ColumnSpan="4" Grid.Row="0" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Orientation="Horizontal">
                             <Label Content="MasterMaterial Path: "/>
                             <Label Margin="5,0,0,0" Content="{Binding ElementName=MatSelect, Path=SelectedItem.MasterMaterial}"/>
                         </StackPanel>
