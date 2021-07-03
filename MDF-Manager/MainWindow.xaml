@@ -17,6 +17,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Dragablz;component/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            
             <Style TargetType="{x:Type dragablz:TabablzControl}" x:Key="TabablzControlStyle">
                 <Setter Property="ItemsSource" Value="{Binding MDFs}" />
                 <Setter Property="ShowDefaultAddButton" Value="False" />
@@ -43,6 +44,9 @@
             <Style x:Key="ContextMatView" TargetType="{x:Type ListBoxItem}">
                 <Setter Property="ContextMenu" Value="{StaticResource MaterialRightClick}"/>
             </Style>
+            <DataTemplate x:Key="CustomHeader" DataType="{x:Type local:TabHeaderViewModel}">
+                <local:CustomHeader/>
+            </DataTemplate>
             <HierarchicalDataTemplate x:Key="LibHeadTemp" ItemsSource="{Binding Path=Items}">
                 <TextBlock Text="{Binding Path=Header}"/>
             </HierarchicalDataTemplate>
