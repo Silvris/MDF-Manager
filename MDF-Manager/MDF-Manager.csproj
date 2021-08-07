@@ -8,9 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\downarrow.png" />
+    <None Remove="Resources\uparrow.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Dragablz" Version="0.0.3.223" />
     <PackageReference Include="Extended.Wpf.Toolkit" Version="4.1.0" />
     <PackageReference Include="murmurhash" Version="1.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\downarrow.png" />
+    <Resource Include="Resources\uparrow.png" />
   </ItemGroup>
 
 </Project>

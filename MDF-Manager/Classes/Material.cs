@@ -140,7 +140,7 @@ namespace MDF_Manager.Classes
             uint UTF16MMH3Hash = br.ReadUInt32();
             uint ASCIIMMH3Hash = br.ReadUInt32();
             Int64 FilePathOff = br.ReadInt64();
-            if(type >= MDFTypes.MHRise)
+            if(type >= MDFTypes.RE3)
             {
                 Int64 Unkn0 = br.ReadInt64(); //value of 0 in most mdf, possible alignment?
             }

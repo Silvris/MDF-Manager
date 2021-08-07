@@ -355,6 +355,56 @@ namespace MDF_Manager
             string jsontxt = JsonSerializer.Serialize(defs);
             File.WriteAllText("defs.json",jsontxt);
         }
+
+        private void MoveMatUp(object sender, RoutedEventArgs e)
+        {
+            Button send = sender as Button;
+            ListBox senderBox = send.DataContext as ListBox;
+            //this approach is weird but I'm surprised it works
+            if (senderBox != null)
+            {
+                Material senderMat = (Material)senderBox.SelectedItem;
+                if(senderMat != null)
+                {
+                    int oldIndex = senderMat.materialIndex;
+                    if (oldIndex > 0)
+                    {
+                        //obviously cannot go past first index
+                        HelperFunctions.Swap(MDFs[MaterialView.SelectedIndex].Materials, oldIndex - 1, oldIndex);
+                        senderBox.SelectedIndex = oldIndex - 1;
+                        send.DataContext = senderBox;
+                    }
+
+                }
+
+            }
+            UpdateMaterials();
+        }
+        private void MoveMatDown(object sender, RoutedEventArgs e)
+        {
+            Button send = sender as Button;
+            ListBox senderBox = send.DataContext as ListBox;
+            //this approach is weird but I'm surprised it works
+            if(senderBox != null)
+            {
+                Material senderMat = (Material)senderBox.SelectedItem;
+                if(senderMat != null)
+                {
+                    int oldIndex = senderMat.materialIndex;
+                    if (oldIndex < MDFs[MaterialView.SelectedIndex].Materials.Count - 1)
+                    {
+                        //obviously cannot go past last index
+                        HelperFunctions.Swap(MDFs[MaterialView.SelectedIndex].Materials, oldIndex + 1, oldIndex);
+                        senderBox.SelectedIndex = oldIndex + 1;
+                        send.DataContext = senderBox;
+                    }
+
+                }
+
+            }
+            UpdateMaterials();
+
+        }
     }
     public class PropertySelect : DataTemplateSelector
     {
