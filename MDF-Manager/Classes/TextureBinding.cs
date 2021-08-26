@@ -13,7 +13,7 @@ namespace MDF_Manager.Classes
         public string path { get; set; }
         public int GetSize(MDFTypes type)
         {
-            if (type == MDFTypes.MHRise)
+            if (type >= MDFTypes.RE3)
             {
                 return 32;
             }
@@ -40,7 +40,7 @@ namespace MDF_Manager.Classes
             bw.Write(HelperFunctions.Murmur3Hash(Encoding.Unicode.GetBytes(name)));
             bw.Write(HelperFunctions.Murmur3Hash(Encoding.ASCII.GetBytes(name)));//potentially UTF8 rather than ASCII, but further testing would be required
             bw.Write(stringTableOffset + strTableOffs[PathOffsetIndex]);
-            if(type == MDFTypes.MHRise)
+            if(type >= MDFTypes.RE3)
             {
                 bw.Write((long)0);
             }
