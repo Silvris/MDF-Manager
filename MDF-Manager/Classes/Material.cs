@@ -563,6 +563,10 @@ namespace MDF_Manager.Classes
             {
                 propSize += Properties[i].GetSize();
             }
+            while((propSize %16) != 0)
+            {
+                propSize += 1;
+            }
             bw.Write(propSize);
             bw.Write(Properties.Count);
             bw.Write(Textures.Count);
@@ -590,6 +594,11 @@ namespace MDF_Manager.Classes
             for(int i = 0; i < Properties.Count; i++)
             {
                 Properties[i].Export(bw, type, ref propHeaderOffset, ref propertiesOffset, basePropOffset, stringTableOffset, strTableOffsets);
+            }
+            if ((basePropOffset + propSize) != propertiesOffset)
+            {
+                Int64 diff = basePropOffset + propSize - propertiesOffset;
+                propertiesOffset += diff;
             }
         }
     }
