@@ -151,10 +151,18 @@ namespace MDF_Manager.Classes
             List<byte> stringTable = GenerateStringTable(ref strTableOffsets);
             //this function handles the biggest problem of writing materials, getting the name offsets
             long materialOffset = bw.BaseStream.Position;
+            while ((materialOffset % 16) != 0)
+            {
+                materialOffset++;
+            }
             long textureOffset = materialOffset;
             for(int i = 0; i < Materials.Count; i++)
             {
                 textureOffset += Materials[i].GetSize(type);
+            }
+            while((textureOffset%16) != 0)
+            {
+                textureOffset++;
             }
             long propHeadersOffset = textureOffset;
             for(int i = 0; i < Materials.Count; i++)
@@ -164,6 +172,10 @@ namespace MDF_Manager.Classes
                     propHeadersOffset += Materials[i].Textures[j].GetSize(type);
                 }
             }
+            while ((propHeadersOffset % 16) != 0)
+            {
+                propHeadersOffset++;
+            }
             long stringTableOffset = propHeadersOffset;
             for (int i = 0; i < Materials.Count; i++)
             {
@@ -172,7 +184,15 @@ namespace MDF_Manager.Classes
                     stringTableOffset += Materials[i].Properties[j].GetPropHeaderSize();
                 }
             }
+            while ((stringTableOffset % 16) != 0)
+            {
+                stringTableOffset++;
+            }
             long propertiesOffset = stringTableOffset + stringTable.Count;
+            while ((propertiesOffset % 16) != 0)
+            {
+                propertiesOffset++;
+            }
             bw.BaseStream.Seek(stringTableOffset,SeekOrigin.Begin);
             for(int i = 0; i < stringTable.Count; i++)
             {

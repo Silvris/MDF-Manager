@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Windows;
 using System.Windows.Media;
 
 namespace MDF_Manager
@@ -80,6 +81,46 @@ namespace MDF_Manager
             T tmp = list[indexA];
             list[indexA] = list[indexB];
             list[indexB] = tmp;
+        }
+
+        public static BinaryReader OpenFileR(string filename, Encoding encoding = null, FileMode mode = FileMode.Open)//surprised it doesn't get too mad at me here
+        {
+            if (encoding is null)
+            {
+                encoding = Encoding.ASCII;
+            }
+
+            try
+            {
+                BinaryReader br = new BinaryReader(new FileStream(filename, mode), encoding);
+                return br;
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("File could not be opened, likely because it is being used by another process.");
+                return null;
+            }
+
+        }
+
+        public static BinaryWriter OpenFileW(string filename, Encoding encoding = null, FileMode mode = FileMode.Create)
+        {
+            if (encoding is null)
+            {
+                encoding = Encoding.ASCII;
+            }
+
+            try
+            {
+                BinaryWriter bw = new BinaryWriter(new FileStream(filename, mode), encoding);
+                return bw;
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("File could not be opened, likely because it is being used by another process.");
+                return null;
+            }
+
         }
     }
 }

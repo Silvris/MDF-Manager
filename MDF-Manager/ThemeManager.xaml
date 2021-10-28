@@ -1,0 +1,34 @@
+﻿<Window x:Class="MDF_Manager.ThemeManager"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MDF_Manager"
+        mc:Ignorable="d"
+        Title="ThemeManager" Background="#EEEEEE" Height="500" Width="400" ResizeMode="NoResize">
+    <Grid>
+        <Border BorderBrush="Black" BorderThickness="1" Height="50" Width="100" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250,40,0,0">
+            <Rectangle x:Name="Background" MouseDown="SetBackground" Fill="White"/>
+        </Border>
+        <Border BorderBrush="Black" BorderThickness="1" Height="50" Width="100" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250,120,0,0">
+            <Rectangle x:Name="Foreground" MouseDown="SetForeground" Fill="White"/>
+        </Border>
+        <Border BorderBrush="Black" BorderThickness="1" Height="50" Width="100" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250,200,0,0">
+            <Rectangle x:Name="Windows" MouseDown="SetWindows" Fill="White"/>
+        </Border>
+        <Border BorderBrush="Black" BorderThickness="1" Height="50" Width="100" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250,280,0,0">
+            <Rectangle x:Name="Buttons" MouseDown="SetButton" Fill="White"/>
+        </Border>
+        <Border BorderBrush="Black" BorderThickness="1" Height="50" Width="100" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250,360,0,0">
+            <Rectangle x:Name="Text" MouseDown="SetText" Fill="White"/>
+        </Border>
+
+        <Label Content="Background" VerticalAlignment="Top" HorizontalAlignment="Left" FontSize="20" Margin="50,47,0,0"/>
+        <Label Content="Foreground" VerticalAlignment="Top" HorizontalAlignment="Left" FontSize="20" Margin="50,127,0,0"/>
+        <Label Content="Windows" VerticalAlignment="Top" HorizontalAlignment="Left" FontSize="20" Margin="50,207,0,0"/>
+        <Label Content="Buttons" VerticalAlignment="Top" HorizontalAlignment="Left" FontSize="20" Margin="50,287,0,0"/>
+        <Label Content="Text" VerticalAlignment="Top" HorizontalAlignment="Left" FontSize="20" Margin="50,367,0,0"/>
+
+        <Button Content="Confirm" Click="Confirm" VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="100" Height="40" Margin="0,10"/>
+    </Grid>
+</Window>

@@ -17,7 +17,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Dragablz;component/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            
+
             <Style TargetType="{x:Type dragablz:TabablzControl}" x:Key="TabablzControlStyle">
                 <Setter Property="ItemsSource" Value="{Binding MDFs}" />
                 <Setter Property="ShowDefaultAddButton" Value="False" />
@@ -43,12 +43,13 @@
             </ContextMenu>
             <Style x:Key="ContextMatView" TargetType="{x:Type ListBoxItem}">
                 <Setter Property="ContextMenu" Value="{StaticResource MaterialRightClick}"/>
+                <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextColor}"/>
             </Style>
             <DataTemplate x:Key="CustomHeader" DataType="{x:Type local:TabHeaderViewModel}">
                 <local:CustomHeader/>
             </DataTemplate>
             <HierarchicalDataTemplate x:Key="LibHeadTemp" ItemsSource="{Binding Path=Items}">
-                <TextBlock Text="{Binding Path=Header}"/>
+                <TextBlock Foreground="{DynamicResource TextColor}" Text="{Binding Path=Header}"/>
             </HierarchicalDataTemplate>
             <HierarchicalDataTemplate x:Key="LibraryEntryTemp" ItemsSource="{Binding Path=Items}">
                 <TextBlock Text="{Binding Path=Header}"/>
@@ -103,7 +104,7 @@
                                 <ColumnDefinition Width="0.9*"/>
                                 <ColumnDefinition Width="0.1*"/>
                             </Grid.ColumnDefinitions>
-                            <ListBox x:Name="MatSelect" Grid.Column="0" SelectedIndex="0" Height="Auto" MinWidth="200" HorizontalAlignment="Stretch" ItemContainerStyle="{StaticResource ContextMatView}" ItemsSource="{Binding Path=Materials}">
+                            <ListBox x:Name="MatSelect" Background="{DynamicResource ForegroundColor}" Grid.Column="0" SelectedIndex="0" Height="Auto" MinWidth="200" HorizontalAlignment="Stretch" ItemContainerStyle="{StaticResource ContextMatView}" ItemsSource="{Binding Path=Materials}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <Label FontSize="12" Content="{Binding Name}"/>
@@ -186,12 +187,12 @@
             </DataTemplate>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid>
+    <Grid Background="{DynamicResource BackgroundColor}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width=".4*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
-        <Menu Height="20" Grid.ColumnSpan="2" Background="White" VerticalAlignment="Top">
+        <Menu Height="20" Grid.ColumnSpan="2" Background="#EEEEEE" VerticalAlignment="Top">
             <MenuItem Header="File">
                 <MenuItem Header="Open" Click="OpenMDFFile"/>
                 <MenuItem Header="Save" Click="Save"/>
@@ -204,13 +205,15 @@
                 <MenuItem Header="Save Library File" Click="SaveLibrary"/>
                 <MenuItem Header="Save Library File As" Click="SaveLibraryAs"/>
             </MenuItem>
+            <MenuItem Header="Theme" Click="ThemeOpen"/>
         </Menu>
-        <TreeView x:Name="LibraryView" ItemsSource="{Binding lib.entries}" ItemTemplateSelector="{StaticResource LibSelector}" MouseMove="treeView_MouseMove" Grid.Column="0" Margin="10,60,10,10"/>
+        <TreeView x:Name="LibraryView" Background="{DynamicResource ForegroundColor}" ItemsSource="{Binding lib.entries}" ItemTemplateSelector="{StaticResource LibSelector}" MouseMove="treeView_MouseMove" Grid.Column="0" Margin="10,60,10,10"/>
         <Label Content="Library" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,30,10,10"/>
         <StackPanel Grid.Column="0" Width="Auto" Height="20" VerticalAlignment="Top" Margin="55,31,3,0" Orientation="Horizontal">
             <Button Content="Add" Click="AddToLibrary" Width="60" Height="20" FontSize="10" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top"/>
             <Button Content="Remove" Click="RemoveFromLibrary" Width="60" Height="20" FontSize="10" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top"/>
         </StackPanel>
-        <dragablz:TabablzControl AllowDrop="True" Grid.Column="1" x:Name="MaterialView" DragOver="treeView_DragOver" ItemsSource="{Binding MDFs}" ContentTemplate="{StaticResource MDFMain}" ShowDefaultCloseButton="True" Style="{StaticResource TabablzControlStyle}" Margin="8,30,8,8"/>
+        <GridSplitter/>
+        <TabControl Background="{Binding ForegroundColor}" AllowDrop="True" Grid.Column="1" x:Name="MaterialView" DragOver="treeView_DragOver" ItemsSource="{Binding MDFs}" ContentTemplate="{StaticResource MDFMain}" Margin="8,30,8,8"/>
     </Grid>
 </Window>

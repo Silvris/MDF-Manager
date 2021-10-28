@@ -17,6 +17,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Text.Json;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace MDF_Manager
 {
@@ -29,8 +31,14 @@ namespace MDF_Manager
         public Defs defs { get; set; }
         public Library lib { get; set; }
         public bool LibraryChanged = false;
+        public SolidColorBrush BackgroundColor { get; set; }
+        public SolidColorBrush ForegroundColor { get; set; }
+        public SolidColorBrush WindowsColor { get; set; }
+        public SolidColorBrush ButtonsColor { get; set; }
+        public SolidColorBrush TextColor { get; set; }
 
         bool IsDragging;
+
         public MainWindow()
         {
             lib = new Library();
@@ -56,7 +64,7 @@ namespace MDF_Manager
                 {
                     if (File.Exists(defs.lastOpenFiles[i]))
                     {
-                        BinaryReader readFile = new BinaryReader(new FileStream(defs.lastOpenFiles[i], FileMode.Open), Encoding.Unicode);
+                        BinaryReader readFile = HelperFunctions.OpenFileR(defs.lastOpenFiles[i], Encoding.Unicode);
                         MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(defs.lastOpenFiles[i]).Replace(".", ""));
                         MDFs.Add(new MDFFile(defs.lastOpenFiles[i], readFile, type));
                         readFile.Close();
@@ -67,8 +75,13 @@ namespace MDF_Manager
             InitializeComponent();
             MaterialView.DataContext = this;
             LibraryView.DataContext = this;
+            UpdateWindowBrushes();
         }
 
+        void InitializeBrushes(Defs def)
+        {
+
+        }
         void UpdateMaterials()
         {
             for (int i = 0; i < MDFs[MaterialView.SelectedIndex].Materials.Count; i++)
@@ -101,7 +114,7 @@ namespace MDF_Manager
             importFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRise Material file (*.19)|*.19";
             if (importFile.ShowDialog() == true)
             {
-                BinaryReader readFile = new BinaryReader(new FileStream(importFile.FileName, FileMode.Open), Encoding.Unicode);
+                BinaryReader readFile = HelperFunctions.OpenFileR(importFile.FileName, Encoding.Unicode);
                 MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(importFile.FileName).Replace(".", ""));
                 MDFs.Add(new MDFFile(importFile.FileName,readFile,type));
                 readFile.Close();
@@ -117,7 +130,7 @@ namespace MDF_Manager
                 }
                 else
                 {
-                    BinaryWriter bw = new BinaryWriter(new FileStream(MDFs[MaterialView.SelectedIndex].Header, FileMode.OpenOrCreate), Encoding.Unicode);
+                    BinaryWriter bw = HelperFunctions.OpenFileW(MDFs[MaterialView.SelectedIndex].Header, Encoding.Unicode);
                     MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(MDFs[MaterialView.SelectedIndex].Header).Replace(".", ""));
                     MDFs[MaterialView.SelectedIndex].Export(bw, type);
                     bw.Close();
@@ -141,7 +154,7 @@ namespace MDF_Manager
                     saveFile.FileName = System.IO.Path.GetFileName(MDFs[MaterialView.SelectedIndex].Header);
                     if (saveFile.ShowDialog() == true)
                     {
-                        BinaryWriter bw = new BinaryWriter(new FileStream(saveFile.FileName, FileMode.OpenOrCreate), Encoding.Unicode);
+                        BinaryWriter bw = HelperFunctions.OpenFileW(saveFile.FileName, Encoding.Unicode);
                         MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(saveFile.FileName).Replace(".", ""));
                         MDFs[MaterialView.SelectedIndex].Export(bw, type);
                         bw.Close();
@@ -164,7 +177,7 @@ namespace MDF_Manager
                 }
                 else
                 {
-                    BinaryWriter bw = new BinaryWriter(new FileStream(MDFs[i].Header, FileMode.OpenOrCreate), Encoding.Unicode);
+                    BinaryWriter bw = HelperFunctions.OpenFileW(MDFs[i].Header, Encoding.Unicode);
                     MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(MDFs[i].Header).Replace(".", ""));
                     MDFs[i].Export(bw, type);
                     bw.Close();
@@ -201,7 +214,7 @@ namespace MDF_Manager
                 if(MDFs.Count > 0)
                 {
                     LibraryEntry entry = (LibraryEntry)e.Data.GetData(typeof(LibraryEntry));
-                    BinaryReader readFile = new BinaryReader(new FileStream(entry.MDFPath, FileMode.Open), Encoding.Unicode);
+                    BinaryReader readFile = HelperFunctions.OpenFileR(entry.MDFPath,Encoding.Unicode);
                     MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(entry.MDFPath).Replace(".", ""));
                     MDFFile donor = new MDFFile(entry.MDFPath, readFile, type);
                     readFile.Close();
@@ -229,7 +242,7 @@ namespace MDF_Manager
                 {
                     if (files[i].Contains(".6") || files[i].Contains(".10") || files[i].Contains(".13") || files[i].Contains(".19"))
                     {
-                        BinaryReader readFile = new BinaryReader(new FileStream(files[i], FileMode.Open), Encoding.Unicode);
+                        BinaryReader readFile = HelperFunctions.OpenFileR(files[i], Encoding.Unicode);
                         MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(files[i]).Replace(".", ""));
                         MDFs.Add(new MDFFile(files[i], readFile, type));
                         readFile.Close();
@@ -273,7 +286,7 @@ namespace MDF_Manager
             importFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRise Material file (*.19)|*.19";
             if (importFile.ShowDialog() == true)
             {
-                BinaryReader readFile = new BinaryReader(new FileStream(importFile.FileName, FileMode.Open), Encoding.Unicode);
+                BinaryReader readFile = HelperFunctions.OpenFileR(importFile.FileName, Encoding.Unicode);
                 MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(importFile.FileName).Replace(".", ""));
                 MDFFile ibmdf = new MDFFile(importFile.FileName, readFile, type);
                 LibraryEntryHeader libHead = new LibraryEntryHeader(importFile.FileName);
@@ -290,8 +303,12 @@ namespace MDF_Manager
         }
         private void RemoveFromLibrary(object sender, RoutedEventArgs e)
         {
-            lib.entries.Remove((LibraryEntryHeader)LibraryView.SelectedItem);
-            LibraryChanged = true;
+            if(LibraryView.SelectedItem is LibraryEntryHeader)
+            {
+                lib.entries.Remove((LibraryEntryHeader)LibraryView.SelectedItem);
+                LibraryChanged = true;
+            }
+
         }
 
         private void NewLibrary(object sender, RoutedEventArgs e)
@@ -352,7 +369,9 @@ namespace MDF_Manager
             {
                 defs.lastOpenFiles.Add(MDFs[i].FileName);
             }
-            string jsontxt = JsonSerializer.Serialize(defs);
+            JsonSerializerOptions options = new JsonSerializerOptions();
+            options.WriteIndented = true;
+            string jsontxt = JsonSerializer.Serialize(defs,options);
             File.WriteAllText("defs.json",jsontxt);
         }
 
@@ -404,6 +423,28 @@ namespace MDF_Manager
             }
             UpdateMaterials();
 
+        }
+        public void UpdateWindowBrushes()
+        {
+            Resources["BackgroundColor"] = BackgroundColor;
+            Resources["ForegroundColor"] = ForegroundColor;
+            Resources["WindowsColor"] = WindowsColor;
+            Resources["ButtonColor"] = ButtonsColor;
+            Resources["TextColor"] = TextColor;
+        }
+
+        private void ThemeOpen(object sender, RoutedEventArgs e)
+        {
+            ThemeManager themeManager = new ThemeManager();
+            if(themeManager.ShowDialog() == true)
+            {
+                BackgroundColor = themeManager.BackgroundColor;
+                ForegroundColor = themeManager.ForegroundColor;
+                WindowsColor = themeManager.WindowsColor;
+                ButtonsColor = themeManager.ButtonColor;
+                TextColor = themeManager.TextColor;
+                UpdateWindowBrushes();
+            }
         }
     }
     public class PropertySelect : DataTemplateSelector
