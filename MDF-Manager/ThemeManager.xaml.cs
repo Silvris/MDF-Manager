@@ -27,15 +27,15 @@ namespace MDF_Manager
         private Color _Text = new Color { R = 0, G = 0, B = 0, A = 255 };
 
         public SolidColorBrush BackgroundColor
-        { get => (SolidColorBrush)HelperFunctions.GetBrushFromColor(_Background); set { _Background = value.Color; } }
+        { get => (SolidColorBrush)HelperFunctions.GetBrushFromColor(_Background); set { _Background = value.Color; UpdateRects(); } }
         public SolidColorBrush ForegroundColor 
-        { get => (SolidColorBrush)HelperFunctions.GetBrushFromColor(_Foreground); set { _Foreground = value.Color; } }
+        { get => (SolidColorBrush)HelperFunctions.GetBrushFromColor(_Foreground); set { _Foreground = value.Color; UpdateRects(); } }
         public SolidColorBrush WindowsColor
-        { get => (SolidColorBrush)HelperFunctions.GetBrushFromColor(_Windows); set { _Windows = value.Color; } }
+        { get => (SolidColorBrush)HelperFunctions.GetBrushFromColor(_Windows); set { _Windows = value.Color; UpdateRects(); } }
         public SolidColorBrush ButtonColor 
-        { get => (SolidColorBrush)HelperFunctions.GetBrushFromColor(_Button); set { _Button = value.Color; } }
+        { get => (SolidColorBrush)HelperFunctions.GetBrushFromColor(_Button); set { _Button = value.Color; UpdateRects(); } }
         public SolidColorBrush TextColor 
-        { get => (SolidColorBrush)HelperFunctions.GetBrushFromColor(_Text); set { _Text = value.Color; } }
+        { get => (SolidColorBrush)HelperFunctions.GetBrushFromColor(_Text); set { _Text = value.Color; UpdateRects(); } }
         public ThemeManager()
         {
             InitializeComponent();
@@ -46,6 +46,7 @@ namespace MDF_Manager
         {
             Background.Fill = BackgroundColor;
             Foreground.Fill = ForegroundColor;
+            Windows.Fill = WindowsColor;
             Buttons.Fill = ButtonColor;
             Text.Fill = TextColor;
         }

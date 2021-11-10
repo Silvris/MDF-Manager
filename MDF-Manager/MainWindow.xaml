@@ -14,19 +14,12 @@
         Title="MDF Manager" Background="#EEEEEE" MinHeight="800" MinWidth="1200" MaxHeight="1080" MaxWidth="1920">
     <Window.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Dragablz;component/Themes/Generic.xaml" />
-            </ResourceDictionary.MergedDictionaries>
+            <SolidColorBrush x:Key="TextColor" Color="Black"/>
+            <SolidColorBrush x:Key="WindowsColor" Color="White"/>
+            <SolidColorBrush x:Key="BackgroundColor" Color="#EEEEEE"/>
+            <SolidColorBrush x:Key="ForegroundColor" Color="White"/>
+            <SolidColorBrush x:Key="ButtonColor" Color="#EEEEEE"/>
 
-            <Style TargetType="{x:Type dragablz:TabablzControl}" x:Key="TabablzControlStyle">
-                <Setter Property="ItemsSource" Value="{Binding MDFs}" />
-                <Setter Property="ShowDefaultAddButton" Value="False" />
-                <Setter Property="ShowDefaultCloseButton" Value="True" />
-                <Setter Property="ItemContainerStyle" Value="{StaticResource TrapezoidDragableTabItemStyle}" />
-                <Setter Property="AdjacentHeaderItemOffset" Value="-10" />
-                <Setter Property="HeaderMemberPath" Value="Header" />
-                <EventSetter Event="Drop" Handler="TabablzControl_Drop"/>
-            </Style>
             <Style x:Key="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}" TargetType="Label">
                 <Setter Property="Template">
                     <Setter.Value>
@@ -38,6 +31,56 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            <ControlTemplate x:Key="MenuItemControlTemplate1" TargetType="{x:Type MenuItem}">
+                <Border x:Name="templateRoot" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                    <Grid VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Margin="3" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center" Width="16"/>
+                        <Path x:Name="GlyphPanel" Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="{TemplateBinding Foreground}" FlowDirection="LeftToRight" Margin="3" Visibility="Collapsed" VerticalAlignment="Center"/>
+                        <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        <Popup x:Name="PART_Popup" AllowsTransparency="True" Focusable="False" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}" PopupAnimation="{DynamicResource {x:Static SystemParameters.MenuPopupAnimationKey}}" Placement="Bottom">
+                            <Border x:Name="SubMenuBorder" BorderBrush="#FF999999" BorderThickness="1" Background="{DynamicResource ForegroundColor}" Padding="2">
+                                <ScrollViewer x:Name="SubMenuScrollViewer" Style="{DynamicResource {ComponentResourceKey ResourceId=MenuScrollViewer, TypeInTargetAssembly={x:Type FrameworkElement}}}">
+                                    <Grid RenderOptions.ClearTypeHint="Enabled">
+                                        <Canvas HorizontalAlignment="Left" Height="0" VerticalAlignment="Top" Width="0">
+                                            <Rectangle x:Name="OpaqueRect" Fill="{Binding Background, ElementName=SubMenuBorder}" Height="{Binding ActualHeight, ElementName=SubMenuBorder}" Width="{Binding ActualWidth, ElementName=SubMenuBorder}"/>
+                                        </Canvas>
+                                        <Rectangle Fill="#FFD7D7D7" HorizontalAlignment="Left" Margin="29,2,0,2" Width="1"/>
+                                        <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Cycle" Grid.IsSharedSizeScope="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" KeyboardNavigation.TabNavigation="Cycle"/>
+                                    </Grid>
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsSuspendingPopupAnimation" Value="True">
+                        <Setter Property="PopupAnimation" TargetName="PART_Popup" Value="None"/>
+                    </Trigger>
+                    <Trigger Property="Icon" Value="{x:Null}">
+                        <Setter Property="Visibility" TargetName="Icon" Value="Collapsed"/>
+                    </Trigger>
+                    <Trigger Property="IsChecked" Value="True">
+                        <Setter Property="Visibility" TargetName="GlyphPanel" Value="Visible"/>
+                        <Setter Property="Visibility" TargetName="Icon" Value="Collapsed"/>
+                    </Trigger>
+                    <Trigger Property="IsHighlighted" Value="True">
+                        <Setter Property="Background" TargetName="templateRoot" Value="#3D26A0DA"/>
+                        <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FF26A0DA"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="TextElement.Foreground" TargetName="templateRoot" Value="#FF707070"/>
+                        <Setter Property="Fill" TargetName="GlyphPanel" Value="#FF707070"/>
+                    </Trigger>
+                    <Trigger Property="CanContentScroll" SourceName="SubMenuScrollViewer" Value="False">
+                        <Setter Property="Canvas.Top" TargetName="OpaqueRect" Value="{Binding VerticalOffset, ElementName=SubMenuScrollViewer}"/>
+                        <Setter Property="Canvas.Left" TargetName="OpaqueRect" Value="{Binding HorizontalOffset, ElementName=SubMenuScrollViewer}"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
             <ContextMenu x:Key="MaterialRightClick">
                 <MenuItem Header="Delete Selected Material" Click="DeleteMaterial"/>
             </ContextMenu>
@@ -45,24 +88,31 @@
                 <Setter Property="ContextMenu" Value="{StaticResource MaterialRightClick}"/>
                 <Setter Property="TextBlock.Foreground" Value="{DynamicResource TextColor}"/>
             </Style>
-            <DataTemplate x:Key="CustomHeader" DataType="{x:Type local:TabHeaderViewModel}">
-                <local:CustomHeader/>
-            </DataTemplate>
             <HierarchicalDataTemplate x:Key="LibHeadTemp" ItemsSource="{Binding Path=Items}">
                 <TextBlock Foreground="{DynamicResource TextColor}" Text="{Binding Path=Header}"/>
             </HierarchicalDataTemplate>
             <HierarchicalDataTemplate x:Key="LibraryEntryTemp" ItemsSource="{Binding Path=Items}">
-                <TextBlock Text="{Binding Path=Header}"/>
+                <TextBlock Foreground="{DynamicResource TextColor}" Text="{Binding Path=Header}"/>
+            </HierarchicalDataTemplate>
+            <HierarchicalDataTemplate x:Key="CompEntry" ItemsSource="{Binding Path=Items}">
+                <TextBlock Foreground="{DynamicResource TextColor}" Text="{Binding Path=Header}"/>
+            </HierarchicalDataTemplate>
+            <HierarchicalDataTemplate x:Key="CompEntryHeader" ItemsSource="{Binding Path=Items}">
+                <TextBlock Foreground="{DynamicResource TextColor}" Text="{Binding Path=Header}"/>
+            </HierarchicalDataTemplate>
+            <HierarchicalDataTemplate x:Key="CompTopLevel" ItemsSource="{Binding Path=Items}">
+                <TextBlock Foreground="{DynamicResource TextColor}" Text="{Binding Path=Header}"/>
             </HierarchicalDataTemplate>
             <local:LibSelect x:Key="LibSelector" LibEntry="{StaticResource LibraryEntryTemp}" LibEntryHead="{StaticResource LibHeadTemp}"/>
+            <local:CompSelect x:Key="CompSelector" CompEntry="{StaticResource CompEntry}" CompEntryHead="{StaticResource CompEntryHeader}" CompTopLevel="{StaticResource CompTopLevel}"/>
             <DataTemplate x:Key="FloatPropItem">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Margin="20,0" Content="{Binding name}"/>
-                    <xctk:SingleUpDown Grid.Column="1" ShowButtonSpinner="False" Width="Auto" TextAlignment="Right" Value="{Binding value.data,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <Label Grid.Column="0" Margin="20,0" Foreground="{DynamicResource TextColor}" Content="{Binding name}"/>
+                    <xctk:SingleUpDown Grid.Column="1" Foreground="{DynamicResource TextColor}" Background="{DynamicResource ForegroundColor}" ShowButtonSpinner="False" Width="Auto" TextAlignment="Right" Value="{Binding value.data,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
             </DataTemplate>
             <DataTemplate x:Key="Float4PropItem">
@@ -75,39 +125,43 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Margin="20,0,0,0" Content="{Binding name}"/>
+                    <Label Grid.Column="0" Margin="20,0,0,0" Foreground="{DynamicResource TextColor}" Content="{Binding name}"/>
                     <Border Grid.Column="1" Width="50" Height="20" BorderThickness="1" BorderBrush="Black" HorizontalAlignment="Center">
                         <Rectangle MouseLeftButtonDown="ChangeColor" Fill="{Binding value.mBrush}"/>
                     </Border>
-                    <xctk:SingleUpDown Grid.Column="2" ShowButtonSpinner="False" Margin="0,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.x,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
-                    <xctk:SingleUpDown Grid.Column="3" ShowButtonSpinner="False" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.y,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
-                    <xctk:SingleUpDown Grid.Column="4" ShowButtonSpinner="False" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.z,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
-                    <xctk:SingleUpDown Grid.Column="5" ShowButtonSpinner="False" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.w,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <xctk:SingleUpDown Foreground="{DynamicResource TextColor}" Background="{DynamicResource ForegroundColor}" Grid.Column="2" ShowButtonSpinner="False" Margin="0,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.x,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <xctk:SingleUpDown Foreground="{DynamicResource TextColor}" Background="{DynamicResource ForegroundColor}" Grid.Column="3" ShowButtonSpinner="False" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.y,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <xctk:SingleUpDown Foreground="{DynamicResource TextColor}" Background="{DynamicResource ForegroundColor}" Grid.Column="4" ShowButtonSpinner="False" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.z,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <xctk:SingleUpDown Foreground="{DynamicResource TextColor}" Background="{DynamicResource ForegroundColor}" Grid.Column="5" ShowButtonSpinner="False" Margin="10,0,0,0" Width="Auto" TextAlignment="Right" Value="{Binding value.w,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
             </DataTemplate>
             <local:PropertySelect x:Key="PropertySelector" FloatTemplate="{StaticResource FloatPropItem}" Float4Template="{StaticResource Float4PropItem}"/>
             <DataTemplate x:Key="MDFMain">
-                <Grid>
+                <Grid Background="{DynamicResource ForegroundColor}">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="2*"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="2*" MinHeight="250"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="*" MinHeight="100"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="2*" MinHeight="200"/>
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0"  Margin="0,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*" MinWidth="300"/>
+                            <ColumnDefinition Width="5"/>
+                            <ColumnDefinition Width="*" MinWidth="300"/>
+                            <ColumnDefinition Width="5"/>
+                            <ColumnDefinition Width="*" MinWidth="300"/>
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0" Margin="40,10,10,10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="0.9*"/>
                                 <ColumnDefinition Width="0.1*"/>
                             </Grid.ColumnDefinitions>
-                            <ListBox x:Name="MatSelect" Background="{DynamicResource ForegroundColor}" Grid.Column="0" SelectedIndex="0" Height="Auto" MinWidth="200" HorizontalAlignment="Stretch" ItemContainerStyle="{StaticResource ContextMatView}" ItemsSource="{Binding Path=Materials}">
+                            <ListBox x:Name="MatSelect" Background="{DynamicResource WindowsColor}" Grid.Column="0" SelectedIndex="0" Height="Auto" MinWidth="200" HorizontalAlignment="Stretch" ItemContainerStyle="{StaticResource ContextMatView}" ItemsSource="{Binding Path=Materials}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
-                                        <Label FontSize="12" Content="{Binding Name}"/>
+                                        <Label FontSize="12" Foreground="{DynamicResource TextColor}" Content="{Binding Name}"/>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
@@ -116,28 +170,31 @@
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Button DataContext="{Binding ElementName=MatSelect}" Grid.Row="0" Margin="0,5,0,0" Click="MoveMatUp">
+                                <Button Foreground="{DynamicResource TextColor}" Background="{DynamicResource ButtonColor}" DataContext="{Binding ElementName=MatSelect}" Grid.Row="0" Margin="0,5,0,0" Click="MoveMatUp">
                                     <Image Source="Resources/uparrow.png"/>
                                 </Button>
-                                <Button DataContext="{Binding ElementName=MatSelect}" Grid.Row="1" Margin="0,5,0,0" Click="MoveMatDown">
+                                <Button Foreground="{DynamicResource TextColor}" Background="{DynamicResource ButtonColor}" DataContext="{Binding ElementName=MatSelect}" Grid.Row="1" Margin="0,5,0,0" Click="MoveMatDown">
                                     <Image Source="Resources/downarrow.png"/>
                                 </Button>
                             </Grid>
                         </Grid>
-                        <ListBox x:Name="TextureView" Grid.Column="1" Height="Auto" SelectedIndex="0" MinWidth="200" HorizontalAlignment="Stretch" Margin="40,10,10,10" ItemsSource="{Binding ElementName=MatSelect, Path=SelectedItem.Textures}">
+                        <GridSplitter Grid.Column="1" Width="5" Background="{DynamicResource BackgroundColor}" HorizontalAlignment="Stretch"/>
+                        <ListBox x:Name="TextureView" Background="{DynamicResource WindowsColor}" Grid.Column="2" Height="Auto" SelectedIndex="0" MinWidth="200" HorizontalAlignment="Stretch" Margin="40,10,10,10" ItemsSource="{Binding ElementName=MatSelect, Path=SelectedItem.Textures}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Label FontSize="12" Content="{Binding name}"/>
+                                    <Label FontSize="12" Foreground="{DynamicResource TextColor}" Content="{Binding name}"/>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-                        <Grid Grid.Column="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                            <Label HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10" Content="{Binding ElementName=TextureView, Path=SelectedItem.name}" ContentStringFormat="Texture Map: {0}"/>
-                            <Label HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,65" Content="Texture Path:"/>
-                            <TextBox HorizontalAlignment="Stretch" VerticalAlignment="Top" MinWidth="200" Margin="10,100" Text="{Binding ElementName=TextureView, Path=SelectedItem.path, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <GridSplitter Grid.Column="3" Width="5" Background="{DynamicResource BackgroundColor}" HorizontalAlignment="Stretch"/>
+                        <Grid Grid.Column="4" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                            <Label Foreground="{DynamicResource TextColor}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10" Content="{Binding ElementName=TextureView, Path=SelectedItem.name}" ContentStringFormat="Texture Map: {0}"/>
+                            <Label Foreground="{DynamicResource TextColor}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,65" Content="Texture Path:"/>
+                            <TextBox Foreground="{DynamicResource TextColor}" Background="{DynamicResource ForegroundColor}" HorizontalAlignment="Stretch" VerticalAlignment="Top" MinWidth="200" Margin="10,100" Text="{Binding ElementName=TextureView, Path=SelectedItem.path, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         </Grid>
                     </Grid>
-                    <Grid Grid.Row="1" Height="Auto" Width="Auto">
+                    <GridSplitter Height="5" Grid.Row="1" HorizontalAlignment="Stretch" Background="{DynamicResource BackgroundColor}"/>
+                    <Grid Grid.Row="2" Height="Auto" Width="Auto">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
@@ -152,29 +209,28 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Rectangle Width="Auto" Height="2" Fill="#CCCCCC" Grid.Row="0" VerticalAlignment="Top" Grid.ColumnSpan="8" RadiusX="3" RadiusY="3" />
-                        <TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Height="Auto" VerticalAlignment="Center" Margin="10,0,0,0"  Width="Auto" Text="{Binding ElementName=MatSelect, Path=SelectedItem.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Foreground="{DynamicResource TextColor}" Background="{DynamicResource ForegroundColor}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Height="Auto" VerticalAlignment="Center" Margin="10,0,0,0"  Width="Auto" Text="{Binding ElementName=MatSelect, Path=SelectedItem.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         <StackPanel Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Horizontal">
-                            <Label Content="UTF16 MM3 Hash: "/>
-                            <Label Margin="5,0,0,0" Content="{Binding ElementName=MatSelect, Path=SelectedItem.UTF16Hash}" ContentStringFormat="0x{0:X8}"/>
+                            <Label Foreground="{DynamicResource TextColor}" Content="UTF16 MM3 Hash: "/>
+                            <Label Foreground="{DynamicResource TextColor}" Margin="5,0,0,0" Content="{Binding ElementName=MatSelect, Path=SelectedItem.UTF16Hash}" ContentStringFormat="0x{0:X8}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="4" Grid.ColumnSpan="4" Grid.Row="0" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Orientation="Horizontal">
-                            <Label Content="MasterMaterial Path: "/>
-                            <Label Margin="5,0,0,0" Content="{Binding ElementName=MatSelect, Path=SelectedItem.MasterMaterial}"/>
+                            <Label Foreground="{DynamicResource TextColor}" Content="MasterMaterial Path: "/>
+                            <Label Foreground="{DynamicResource TextColor}" Margin="5,0,0,0" Content="{Binding ElementName=MatSelect, Path=SelectedItem.MasterMaterial}"/>
                         </StackPanel>
                         <ComboBox Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Height="20" Width="Auto" Margin="10,0,0,0" ItemsSource="{Binding ShadingTypes}" SelectedItem="{Binding ElementName=MatSelect, Path=SelectedItem.ShaderType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                        <xctk:CheckComboBox Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Margin="10,0,0,0" HorizontalAlignment="Center" Height="20" Grid.ColumnSpan="2" Delimiter=", " ItemsSource="{Binding ElementName=MatSelect, Path=SelectedItem.flags}" DisplayMemberPath="Name" SelectedMemberPath="Selected"/>
+                        <xctk:CheckComboBox Background="{DynamicResource ForegroundColor}" Foreground="{DynamicResource TextColor}" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Margin="10,0,0,0" HorizontalAlignment="Stretch" Height="20" Grid.ColumnSpan="2" Delimiter=", " ItemsSource="{Binding ElementName=MatSelect, Path=SelectedItem.flags}" DisplayMemberPath="Name" SelectedMemberPath="Selected"/>
                         <StackPanel  Grid.Row="1" Grid.Column="4" Grid.ColumnSpan="2" Margin="0,10,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                            <Label Content="Tesselation Factor" HorizontalAlignment="Center"/>
-                            <xctk:IntegerUpDown HorizontalAlignment="Stretch" VerticalAlignment="Center" Maximum="63" Minimum="0" Height="20" Width="Auto" Margin="10,0,0,0" Value="{Binding ElementName=MatSelect, Path=SelectedItem.TessFactor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Label Foreground="{DynamicResource TextColor}" Content="Tesselation Factor" HorizontalAlignment="Center"/>
+                            <xctk:IntegerUpDown  Background="{DynamicResource ForegroundColor}" Foreground="{DynamicResource TextColor}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Maximum="63" Minimum="0" Height="20" Width="Auto" Margin="10,0,0,0" Value="{Binding ElementName=MatSelect, Path=SelectedItem.TessFactor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                         <StackPanel  Grid.Row="1" Grid.Column="6" Grid.ColumnSpan="2" Margin="0,10,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                            <Label Content="Phong Factor" HorizontalAlignment="Center"/>
-                            <xctk:IntegerUpDown Maximum="255" Minimum="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="20" Width="Auto" Margin="10,0,0,0" Value="{Binding ElementName=MatSelect, Path=SelectedItem.PhongFactor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Label Foreground="{DynamicResource TextColor}" Content="Phong Factor" HorizontalAlignment="Center"/>
+                            <xctk:IntegerUpDown Background="{DynamicResource ForegroundColor}" Foreground="{DynamicResource TextColor}" Maximum="255" Minimum="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="20" Width="Auto" Margin="10,0,0,0" Value="{Binding ElementName=MatSelect, Path=SelectedItem.PhongFactor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
-                        <Rectangle Width="Auto" Height="2" Fill="#CCCCCC" Grid.Row="1" VerticalAlignment="Bottom" Grid.ColumnSpan="8" RadiusX="3" RadiusY="3" />
                     </Grid>
-                    <ListBox Grid.Row="2" Margin="10,10" ItemsSource="{Binding ElementName=MatSelect, Path=SelectedItem.Properties}" ItemTemplateSelector="{StaticResource PropertySelector}">
+                    <GridSplitter Height="5" Grid.Row="3" HorizontalAlignment="Stretch" Background="{DynamicResource BackgroundColor}"/>
+                    <ListBox Grid.Row="4" Margin="10,10" Background="{DynamicResource WindowsColor}" ItemsSource="{Binding ElementName=MatSelect, Path=SelectedItem.Properties}" ItemTemplateSelector="{StaticResource PropertySelector}">
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="{x:Type ListBoxItem}">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -182,38 +238,84 @@
                         </ListBox.ItemContainerStyle>
                     </ListBox>
                 </Grid>
-
-
+            </DataTemplate>
+            <DataTemplate x:Key="MDFHeader" DataType="{x:Type classes:MDFFile}">
+                <DockPanel>
+                    <Button Background="{DynamicResource ButtonColor}" Name="btnDelete" DockPanel.Dock="Right" Margin="5,0,0,0" Width="16" Padding="0" Click="btnDelete_Click" CommandParameter="{Binding Header}">
+                        <TextBlock Foreground="{DynamicResource TextColor}" Text="X"/>
+                    </Button>
+                    <TextBlock Text="{Binding Header}" />
+                </DockPanel>
             </DataTemplate>
         </ResourceDictionary>
     </Window.Resources>
     <Grid Background="{DynamicResource BackgroundColor}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width=".4*"/>
-            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width=".4*" MinWidth="250"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="2*" MinWidth="900"/>
         </Grid.ColumnDefinitions>
-        <Menu Height="20" Grid.ColumnSpan="2" Background="#EEEEEE" VerticalAlignment="Top">
-            <MenuItem Header="File">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" MinHeight="200"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="*" MinHeight="200"/>
+        </Grid.RowDefinitions>
+        <Menu Height="20" Grid.ColumnSpan="3" Background="{DynamicResource ForegroundColor}" VerticalAlignment="Top">
+            <MenuItem Template="{StaticResource MenuItemControlTemplate1}" Background="{DynamicResource ForegroundColor}" Foreground="{DynamicResource TextColor}" Header="File">
                 <MenuItem Header="Open" Click="OpenMDFFile"/>
                 <MenuItem Header="Save" Click="Save"/>
                 <MenuItem Header="Save As" Click="SaveAs"/>
                 <MenuItem Header="Save All" Click="SaveAll"/>
             </MenuItem>
-            <MenuItem Header="Library">
+            <MenuItem Template="{StaticResource MenuItemControlTemplate1}" Background="{DynamicResource ForegroundColor}" Foreground="{DynamicResource TextColor}" Header="Library">
                 <MenuItem Header="New Library File" Click="NewLibrary"/>
                 <MenuItem Header="Open Library File" Click="OpenLibrary"/>
                 <MenuItem Header="Save Library File" Click="SaveLibrary"/>
                 <MenuItem Header="Save Library File As" Click="SaveLibraryAs"/>
             </MenuItem>
-            <MenuItem Header="Theme" Click="ThemeOpen"/>
+            <MenuItem Template="{StaticResource MenuItemControlTemplate1}" Background="{DynamicResource ForegroundColor}" Foreground="{DynamicResource TextColor}" Header="Compendium">
+                <MenuItem Header="Rebase Compendium" Click="RebaseCompendium"/>
+                <MenuItem Header="Expand Compendium" Click="ExpandCompendium"/>
+                <MenuItem Header="Open Compendium" Click="OpenCompendium"/>
+                <MenuItem Header="Save Compendium" Click="SaveCompendium"/>
+                <MenuItem Header="Save Compendium As" Click="SaveCompendiumAs"/>
+            </MenuItem>
+            <MenuItem Template="{StaticResource MenuItemControlTemplate1}" Background="{DynamicResource ForegroundColor}" Foreground="{DynamicResource TextColor}" Header="Theme" Click="ThemeOpen"/>
         </Menu>
-        <TreeView x:Name="LibraryView" Background="{DynamicResource ForegroundColor}" ItemsSource="{Binding lib.entries}" ItemTemplateSelector="{StaticResource LibSelector}" MouseMove="treeView_MouseMove" Grid.Column="0" Margin="10,60,10,10"/>
-        <Label Content="Library" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,30,10,10"/>
+        <TreeView x:Name="LibraryView" Drop="LibraryView_Drop" DragOver="treeView_DragOver" AllowDrop="True" Background="{DynamicResource ForegroundColor}" Width="Auto" Height="Auto" ItemsSource="{Binding lib.entries}" ItemTemplateSelector="{StaticResource LibSelector}" MouseMove="treeView_MouseMove" Grid.Column="0" Margin="10,60,10,10"/>
+        <Label Foreground="{DynamicResource TextColor}" Content="Library" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,30,10,10"/>
         <StackPanel Grid.Column="0" Width="Auto" Height="20" VerticalAlignment="Top" Margin="55,31,3,0" Orientation="Horizontal">
-            <Button Content="Add" Click="AddToLibrary" Width="60" Height="20" FontSize="10" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top"/>
-            <Button Content="Remove" Click="RemoveFromLibrary" Width="60" Height="20" FontSize="10" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top"/>
+            <Button Background="{DynamicResource ButtonColor}" Foreground="{DynamicResource TextColor}" Content="Add" Click="AddToLibrary" Width="60" Height="20" FontSize="10" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top"/>
+            <Button Background="{DynamicResource ButtonColor}" Foreground="{DynamicResource TextColor}" Content="Remove" Click="RemoveFromLibrary" Width="60" Height="20" FontSize="10" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top"/>
         </StackPanel>
-        <GridSplitter/>
-        <TabControl Background="{Binding ForegroundColor}" AllowDrop="True" Grid.Column="1" x:Name="MaterialView" DragOver="treeView_DragOver" ItemsSource="{Binding MDFs}" ContentTemplate="{StaticResource MDFMain}" Margin="8,30,8,8"/>
+        <GridSplitter Background="{DynamicResource ForegroundColor}" Height="5" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" Grid.Row="1"/>
+        <TreeView x:Name="CompendiumView" ItemsSource="{Binding compendium.entries}" Width="Auto" Height="Auto" ItemTemplateSelector="{StaticResource CompSelector}" Background="{DynamicResource ForegroundColor}" MouseMove="CompendiumView_MouseMove" Grid.Row="2" Margin="10,50,10,10"/>
+        <Label Foreground="{DynamicResource TextColor}" Content="Compendium" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,20,10,10"/>
+        <GridSplitter Background="{DynamicResource ForegroundColor}" Width="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.RowSpan="3" Grid.Column="1"  Margin="0,20,0,0"/>
+        <TabControl MinWidth="600" Drop="TabControl_Drop" Background="{Binding ForegroundColor}" AllowDrop="True" Grid.Column="2" Grid.RowSpan="3" x:Name="MaterialView" DragOver="treeView_DragOver" ItemsSource="{Binding MDFs}" ItemTemplate="{StaticResource MDFHeader}" ContentTemplate="{StaticResource MDFMain}" Margin="8,30,8,8">
+            <TabControl.Template>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"  VerticalScrollBarVisibility="Hidden" >
+                            <TabPanel x:Name="HeaderPanel"
+                          Panel.ZIndex ="1" 
+                          KeyboardNavigation.TabIndex="1"
+                          Grid.Column="0"
+                          Grid.Row="0"
+                          Margin="2,2,2,0"
+                          IsItemsHost="true"/>
+                        </ScrollViewer>
+                        <ContentPresenter x:Name="PART_SelectedContentHost"
+                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                      Margin="{TemplateBinding Padding}"
+                                      ContentSource="SelectedContent" Grid.Row="1"/>
+                    </Grid>
+                </ControlTemplate>
+            </TabControl.Template>
+        </TabControl>
     </Grid>
 </Window>

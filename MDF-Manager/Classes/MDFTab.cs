@@ -14,6 +14,7 @@ namespace MDF_Manager.Classes
         public MDFTab(MDFFile mdfFile)
         {
             mdf = mdfFile;
+            Header = mdf.Header;
         }
     }
 }

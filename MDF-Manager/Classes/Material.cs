@@ -71,7 +71,7 @@ namespace MDF_Manager.Classes
         RE7 = 6,
         RE2DMC5 = 10,
         RE3 = 13,
-        MHRise = 19
+        MHRiseRE8 = 19
     }
 
     public class BooleanHolder : INotifyPropertyChanged
@@ -200,7 +200,7 @@ namespace MDF_Manager.Classes
             {
                 baseVal += 8;
             }
-            else if (type == MDFTypes.MHRise){
+            else if (type == MDFTypes.MHRiseRE8){
                 baseVal += 16;
             }
             return baseVal;
@@ -374,7 +374,7 @@ namespace MDF_Manager.Classes
             int PropBlockSize = br.ReadInt32();
             int PropertyCount = br.ReadInt32();
             int TextureCount = br.ReadInt32();
-            if(type == MDFTypes.MHRise)
+            if(type == MDFTypes.MHRiseRE8)
             {
                 br.ReadInt64();
             }
@@ -382,7 +382,7 @@ namespace MDF_Manager.Classes
             ReadFlagsSection(br);
             Int64 PropHeadersOff = br.ReadInt64();
             Int64 TexHeadersOff = br.ReadInt64();
-            if(type == MDFTypes.MHRise)
+            if(type == MDFTypes.MHRiseRE8)
             {
                 Int64 StringTableOff = br.ReadInt64();//not at all useful, given everything uses absolute offsets
                 //it's possible that this is an offset for something that is not used by most mdfs, this will need to be looked into
@@ -570,7 +570,7 @@ namespace MDF_Manager.Classes
             bw.Write(propSize);
             bw.Write(Properties.Count);
             bw.Write(Textures.Count);
-            if(type == MDFTypes.MHRise)
+            if(type == MDFTypes.MHRiseRE8)
             {
                 bw.Write((long)0);
             }
@@ -578,7 +578,7 @@ namespace MDF_Manager.Classes
             bw.Write(GenerateFlagsSection());
             bw.Write(propHeaderOffset);
             bw.Write(textureOffset);
-            if(type == MDFTypes.MHRise)
+            if(type == MDFTypes.MHRiseRE8)
             {
                 bw.Write(stringTableOffset);
             }

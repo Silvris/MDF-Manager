@@ -27,6 +27,7 @@ namespace MDF_Manager.Classes
         }
         public LibraryEntry(string name, string path)
         {
+            Items = new ObservableCollection<LibraryEntry>(); //how did this not crash
             MaterialName = name;
             MDFPath = path;
         }

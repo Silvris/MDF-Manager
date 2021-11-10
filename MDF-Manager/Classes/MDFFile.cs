@@ -15,6 +15,7 @@ namespace MDF_Manager.Classes
     {
         private string _Header;
         public string Header { get => _Header; set { _Header = value; OnPropertyChanged("Header"); } }
+        public DataTemplate HeaderTemplate { get; set; }
         public string FileName = "";
         static byte[] magic = { (byte)'M', (byte)'D', (byte)'F', 0x00 };
         UInt16 unkn = 1;

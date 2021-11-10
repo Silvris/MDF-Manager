@@ -30,7 +30,9 @@ namespace MDF_Manager
         public ObservableCollection<MDFFile> MDFs { get; set; }
         public Defs defs { get; set; }
         public Library lib { get; set; }
+        public Compendium compendium { get; set; }
         public bool LibraryChanged = false;
+        public bool CompendiumChanged = false;
         public SolidColorBrush BackgroundColor { get; set; }
         public SolidColorBrush ForegroundColor { get; set; }
         public SolidColorBrush WindowsColor { get; set; }
@@ -42,6 +44,7 @@ namespace MDF_Manager
         public MainWindow()
         {
             lib = new Library();
+            compendium = new Compendium();
             if (File.Exists("defs.json"))
             {
                 string jsontxt = File.ReadAllText("defs.json");
@@ -57,6 +60,12 @@ namespace MDF_Manager
                 Library nlib = JsonSerializer.Deserialize<Library>(jsontxt);
                 lib.SetEntries(nlib.entries);
             }
+            if(defs.lastOpenComp != "")
+            {
+                string jsontxt = File.ReadAllText(defs.lastOpenComp);
+                Compendium comp = JsonSerializer.Deserialize<Compendium>(jsontxt);
+                compendium.SetEntries(comp.entries);
+            }
             MDFs = new ObservableCollection<MDFFile>();
             if(defs.lastOpenFiles.Count > 0)
             {
@@ -65,22 +74,35 @@ namespace MDF_Manager
                     if (File.Exists(defs.lastOpenFiles[i]))
                     {
                         BinaryReader readFile = HelperFunctions.OpenFileR(defs.lastOpenFiles[i], Encoding.Unicode);
-                        MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(defs.lastOpenFiles[i]).Replace(".", ""));
-                        MDFs.Add(new MDFFile(defs.lastOpenFiles[i], readFile, type));
-                        readFile.Close();
+                        if(readFile != null)
+                        {
+                            MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(defs.lastOpenFiles[i]).Replace(".", ""));
+                            MDFs.Add(new MDFFile(defs.lastOpenFiles[i], readFile, type));
+                            readFile.Close();
+                        }
                     }
 
                 }
             }
+            InitializeBrushes(defs);
             InitializeComponent();
             MaterialView.DataContext = this;
             LibraryView.DataContext = this;
+            CompendiumView.DataContext = this;
             UpdateWindowBrushes();
+            if (MDFs.Count > 0)
+            {
+                MaterialView.SelectedItem = MDFs[0];
+            }
         }
 
         void InitializeBrushes(Defs def)
         {
-
+            BackgroundColor = new SolidColorBrush(defs.background);
+            ForegroundColor = new SolidColorBrush(defs.foreground);
+            ButtonsColor = new SolidColorBrush(defs.buttons);
+            WindowsColor = new SolidColorBrush(defs.windows);
+            TextColor = new SolidColorBrush(defs.text);
         }
         void UpdateMaterials()
         {
@@ -111,13 +133,17 @@ namespace MDF_Manager
         {
             OpenFileDialog importFile = new OpenFileDialog();
             importFile.Multiselect = false;
-            importFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRise Material file (*.19)|*.19";
+            importFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRiseRE8 Material file (*.19)|*.19";
             if (importFile.ShowDialog() == true)
             {
                 BinaryReader readFile = HelperFunctions.OpenFileR(importFile.FileName, Encoding.Unicode);
-                MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(importFile.FileName).Replace(".", ""));
-                MDFs.Add(new MDFFile(importFile.FileName,readFile,type));
-                readFile.Close();
+                if(readFile != null)
+                {
+                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(importFile.FileName).Replace(".", ""));
+                    MDFs.Add(new MDFFile(importFile.FileName, readFile, type));
+                    readFile.Close();
+                }
+
             }
         }
         private void Save(object sender, RoutedEventArgs e)
@@ -131,9 +157,12 @@ namespace MDF_Manager
                 else
                 {
                     BinaryWriter bw = HelperFunctions.OpenFileW(MDFs[MaterialView.SelectedIndex].Header, Encoding.Unicode);
-                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(MDFs[MaterialView.SelectedIndex].Header).Replace(".", ""));
-                    MDFs[MaterialView.SelectedIndex].Export(bw, type);
-                    bw.Close();
+                    if(bw != null)
+                    {
+                        MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(MDFs[MaterialView.SelectedIndex].Header).Replace(".", ""));
+                        MDFs[MaterialView.SelectedIndex].Export(bw, type);
+                        bw.Close();
+                    }
                 }
             }
 
@@ -150,15 +179,18 @@ namespace MDF_Manager
                 else
                 {
                     SaveFileDialog saveFile = new SaveFileDialog();
-                    saveFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRise Material file (*.19)|*.19";
+                    saveFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRiseRE8 Material file (*.19)|*.19";
                     saveFile.FileName = System.IO.Path.GetFileName(MDFs[MaterialView.SelectedIndex].Header);
                     if (saveFile.ShowDialog() == true)
                     {
                         BinaryWriter bw = HelperFunctions.OpenFileW(saveFile.FileName, Encoding.Unicode);
-                        MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(saveFile.FileName).Replace(".", ""));
-                        MDFs[MaterialView.SelectedIndex].Export(bw, type);
-                        bw.Close();
-                        MDFs[MaterialView.SelectedIndex].Header = saveFile.FileName;
+                        if(bw != null)
+                        {
+                            MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(saveFile.FileName).Replace(".", ""));
+                            MDFs[MaterialView.SelectedIndex].Export(bw, type);
+                            bw.Close();
+                            MDFs[MaterialView.SelectedIndex].Header = saveFile.FileName;
+                        }
                     }
                 }
             }
@@ -178,9 +210,13 @@ namespace MDF_Manager
                 else
                 {
                     BinaryWriter bw = HelperFunctions.OpenFileW(MDFs[i].Header, Encoding.Unicode);
-                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(MDFs[i].Header).Replace(".", ""));
-                    MDFs[i].Export(bw, type);
-                    bw.Close();
+                    if(bw != null)
+                    {
+                        MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(MDFs[i].Header).Replace(".", ""));
+                        MDFs[i].Export(bw, type);
+                        bw.Close();
+                    }
+
                 }
 
             }
@@ -201,12 +237,12 @@ namespace MDF_Manager
         }
         void treeView_DragOver(object sender, DragEventArgs e)
         {
-            if (!e.Data.GetDataPresent(typeof(LibraryEntry)))
+            if (!e.Data.GetDataPresent(typeof(LibraryEntry)) && !e.Data.GetDataPresent(typeof(CompendiumEntry)) && !e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 e.Effects = DragDropEffects.None;
             }
         }
-        private void TabablzControl_Drop(object sender, DragEventArgs e)
+        private void TabControl_Drop(object sender, DragEventArgs e)
         {
             //library dropping
             if (e.Data.GetDataPresent(typeof(LibraryEntry)))
@@ -216,24 +252,39 @@ namespace MDF_Manager
                     LibraryEntry entry = (LibraryEntry)e.Data.GetData(typeof(LibraryEntry));
                     BinaryReader readFile = HelperFunctions.OpenFileR(entry.MDFPath,Encoding.Unicode);
                     MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(entry.MDFPath).Replace(".", ""));
-                    MDFFile donor = new MDFFile(entry.MDFPath, readFile, type);
-                    readFile.Close();
-                    Material newMat = null;
-                    for (int i = 0; i < donor.Materials.Count; i++)
+                    if(readFile != null)
                     {
-                        //the only flaw of ObvservableCollection is lack of Find(), which is fine since we can get around it
-                        if (donor.Materials[i].Name == entry.MaterialName)
+                        MDFFile donor = new MDFFile(entry.MDFPath, readFile, type);
+                        readFile.Close();
+                        Material newMat = null;
+                        for (int i = 0; i < donor.Materials.Count; i++)
                         {
-                            newMat = donor.Materials[i];
+                            //the only flaw of ObvservableCollection is lack of Find(), which is fine since we can get around it
+                            if (donor.Materials[i].Name == entry.MaterialName)
+                            {
+                                newMat = donor.Materials[i];
+                            }
+                        }
+                        if (newMat != null)
+                        {
+                            MDFs[MaterialView.SelectedIndex].Materials.Add(newMat);
+                            UpdateMaterials();
                         }
                     }
-                    if (newMat != null)
-                    {
-                        MDFs[MaterialView.SelectedIndex].Materials.Add(newMat);
-                        UpdateMaterials();
-                    }
+
                 }
 
+            }
+            else if (e.Data.GetDataPresent(typeof(CompendiumEntry)))
+            {
+                CompendiumEntry entry = (CompendiumEntry)e.Data.GetData(typeof(CompendiumEntry));
+                BinaryReader readFile = HelperFunctions.OpenFileR(entry.MDFPath, Encoding.Unicode);
+                if (readFile != null)
+                {
+                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(entry.MDFPath).Replace(".", ""));
+                    MDFs.Add(new MDFFile(entry.MDFPath, readFile, type));
+                    readFile.Close();
+                }
             }
             else if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -243,9 +294,12 @@ namespace MDF_Manager
                     if (files[i].Contains(".6") || files[i].Contains(".10") || files[i].Contains(".13") || files[i].Contains(".19"))
                     {
                         BinaryReader readFile = HelperFunctions.OpenFileR(files[i], Encoding.Unicode);
-                        MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(files[i]).Replace(".", ""));
-                        MDFs.Add(new MDFFile(files[i], readFile, type));
-                        readFile.Close();
+                        if(readFile != null)
+                        {
+                            MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(files[i]).Replace(".", ""));
+                            MDFs.Add(new MDFFile(files[i], readFile, type));
+                            readFile.Close();
+                        }
                     }
                 }
 
@@ -283,22 +337,26 @@ namespace MDF_Manager
         {
             OpenFileDialog importFile = new OpenFileDialog();
             importFile.Multiselect = false;
-            importFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRise Material file (*.19)|*.19";
+            importFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRiseRE8 Material file (*.19)|*.19";
             if (importFile.ShowDialog() == true)
             {
                 BinaryReader readFile = HelperFunctions.OpenFileR(importFile.FileName, Encoding.Unicode);
-                MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(importFile.FileName).Replace(".", ""));
-                MDFFile ibmdf = new MDFFile(importFile.FileName, readFile, type);
-                LibraryEntryHeader libHead = new LibraryEntryHeader(importFile.FileName);
-                for(int i = 0; i < ibmdf.Materials.Count; i++)
+                if(readFile != null)
                 {
-                    LibraryEntry le = new LibraryEntry(ibmdf.Materials[i].Name,importFile.FileName);
-                    //le.Foreground = HelperFunctions.GetBrushFromHex("#000000");
-                    libHead.Items.Add(le);
+                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(importFile.FileName).Replace(".", ""));
+                    MDFFile ibmdf = new MDFFile(importFile.FileName, readFile, type);
+                    LibraryEntryHeader libHead = new LibraryEntryHeader(importFile.FileName);
+                    for (int i = 0; i < ibmdf.Materials.Count; i++)
+                    {
+                        LibraryEntry le = new LibraryEntry(ibmdf.Materials[i].Name, importFile.FileName);
+                        //le.Foreground = HelperFunctions.GetBrushFromHex("#000000");
+                        libHead.Items.Add(le);
+                    }
+                    lib.entries.Add(libHead);
+                    readFile.Close();
+                    LibraryChanged = true;
                 }
-                lib.entries.Add(libHead);
-                readFile.Close();
-                LibraryChanged = true;
+
             }
         }
         private void RemoveFromLibrary(object sender, RoutedEventArgs e)
@@ -344,15 +402,25 @@ namespace MDF_Manager
             if(saveFile.ShowDialog() == true)
             {
                 File.WriteAllText(saveFile.FileName, jsontxt);
+                defs.lastOpenLib = saveFile.FileName;
+                LibraryChanged = false;
             }
 
         }
+        private void DefsSetColor()
+        {
+            defs.background = BackgroundColor.Color;
+            defs.foreground = ForegroundColor.Color;
+            defs.buttons = ButtonsColor.Color;
+            defs.windows = WindowsColor.Color;
+            defs.text = TextColor.Color;
+        }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            DefsSetColor();
             if (LibraryChanged)
             {
-                SaveLibraryNotice sln = new SaveLibraryNotice();
-                if(sln.ShowDialog() == true)
+                if(MessageBox.Show("Save changes to the library?","",MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
                     if(defs.lastOpenLib == "")
                     {
@@ -364,11 +432,19 @@ namespace MDF_Manager
                     }
                 }
             }
+            if (CompendiumChanged)
+            {
+                if (MessageBox.Show("Save changes to the compendium?", "", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    SaveCompendium(sender, new RoutedEventArgs());
+                }
+            }
             defs.lastOpenFiles.Clear();
             for(int i = 0; i < MDFs.Count; i++)
             {
                 defs.lastOpenFiles.Add(MDFs[i].FileName);
             }
+            
             JsonSerializerOptions options = new JsonSerializerOptions();
             options.WriteIndented = true;
             string jsontxt = JsonSerializer.Serialize(defs,options);
@@ -436,6 +512,11 @@ namespace MDF_Manager
         private void ThemeOpen(object sender, RoutedEventArgs e)
         {
             ThemeManager themeManager = new ThemeManager();
+            themeManager.BackgroundColor = BackgroundColor;
+            themeManager.ForegroundColor = ForegroundColor;
+            themeManager.ButtonColor = ButtonsColor;
+            themeManager.WindowsColor = WindowsColor;
+            themeManager.TextColor = TextColor;
             if(themeManager.ShowDialog() == true)
             {
                 BackgroundColor = themeManager.BackgroundColor;
@@ -444,6 +525,203 @@ namespace MDF_Manager
                 ButtonsColor = themeManager.ButtonColor;
                 TextColor = themeManager.TextColor;
                 UpdateWindowBrushes();
+            }
+        }
+        private void btnDelete_Click(object sender, RoutedEventArgs e)
+        {
+            string tabName = (sender as Button).CommandParameter.ToString();
+
+            var item = MaterialView.Items.Cast<MDFFile>().Where(i => i.Header.Equals(tabName)).SingleOrDefault();
+
+            MDFFile tab = item as MDFFile;
+
+            if (tab != null)
+            {
+                // get selected tab
+                MDFFile selectedTab = MaterialView.SelectedItem as MDFFile;
+
+                if (MessageBox.Show(string.Format("Would you like to save before closing?", tab.Header.ToString()),
+                    "Remove Tab", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    BinaryWriter bw = HelperFunctions.OpenFileW(tab.Header, Encoding.Unicode);
+                    if(bw != null)
+                    {
+                        MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(tab.Header).Replace(".", ""));
+                        tab.Export(bw, type);
+                        bw.Close();
+                    }
+
+                }
+
+
+                MDFs.Remove(tab);
+
+                // select previously selected tab. if that is removed then select first tab
+                if ((selectedTab == null || selectedTab.Equals(tab)) && (MDFs.Count > 0))
+                {
+                    selectedTab = MDFs[0];
+                }
+                MaterialView.SelectedItem = selectedTab;
+            }
+        }
+
+        private void ExtendCompendium(OpenFileDialog dialog)
+        {
+            if (dialog.ShowDialog() == true)
+            {
+                string fullPath = dialog.FileName;
+                string searchPath = System.IO.Path.GetDirectoryName(fullPath);
+                EnumerationOptions enops = new EnumerationOptions();
+                enops.RecurseSubdirectories = true;
+                string[] mdfs = System.IO.Directory.GetFiles(searchPath, "*.mdf2.*", enops);//brilliant
+                foreach (string mdf in mdfs)
+                {
+                    //gonna abuse the fact everything is by reference
+                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(mdf.Replace(".stm", "").Replace(".x64", "")).Replace(".", ""));
+                    CompendiumTopLevel parent = null;
+                    switch (type)
+                    {
+                        case MDFTypes.RE7:
+                            parent = compendium.RE7;
+                            break;
+                        case MDFTypes.RE2DMC5:
+                            parent = compendium.RE2DMC5;
+                            break;
+                        case MDFTypes.RE3:
+                            parent = compendium.RE3;
+                            break;
+                        case MDFTypes.MHRiseRE8:
+                            parent = compendium.MHRiseRE8;
+                            break;
+                        default:
+                            break;
+                    }
+                    if (parent != null)
+                    {
+                        BinaryReader br = HelperFunctions.OpenFileR(mdf, Encoding.Unicode);
+                        if (br != null)
+                        {
+                            MDFFile file = new MDFFile(mdf, br, type);
+                            foreach (Material mat in file.Materials)
+                            {
+                                CompendiumEntryHeader mParent = null;
+                                mParent = parent.FindItem(x => x.MMTRName == System.IO.Path.GetFileNameWithoutExtension(mat.MasterMaterial));
+                                if (mParent == null)
+                                {
+                                    mParent = new CompendiumEntryHeader(System.IO.Path.GetFileNameWithoutExtension(mat.MasterMaterial));
+                                    parent.AddChild(mParent);
+                                }
+                                int check = mParent.FindEntry(mdf);
+                                if (check == -1)
+                                {
+                                    CompendiumEntry ce = new CompendiumEntry(mdf);
+                                    mParent.Items.Add(ce);
+                                }
+                            }
+                        }
+                    }
+
+                }
+                CompendiumChanged = true;
+                compendium.Sort();
+            }
+        }
+        private void RebaseCompendium(object sender, RoutedEventArgs e)
+        {
+            compendium.ClearList();
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.CheckFileExists = false;
+            dialog.FileName = "Rebase Compendium here";
+            ExtendCompendium(dialog);
+        }
+        private void ExpandCompendium(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.CheckFileExists = false;
+            dialog.FileName = "Expand Compendium here";
+            ExtendCompendium(dialog);
+        }
+        private void OpenCompendium(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFile = new OpenFileDialog();
+            openFile.Filter = "MDF Material Compendium (*.mdfcomp)|*.mdfcomp";
+            if (openFile.ShowDialog() == true)
+            {
+                string jsontxt = File.ReadAllText(openFile.FileName);
+                Compendium nlib = JsonSerializer.Deserialize<Compendium>(jsontxt);
+                compendium.SetEntries(nlib.entries);
+                defs.lastOpenComp = openFile.FileName;
+                CompendiumChanged = false;
+            }
+        }
+        private void SaveCompendium(object sender, RoutedEventArgs e)
+        {
+            if (defs.lastOpenComp == "")
+            {
+                SaveCompendiumAs(sender, e);
+            }
+            string jsontxt = JsonSerializer.Serialize(compendium);
+            File.WriteAllText(defs.lastOpenComp, jsontxt);
+            CompendiumChanged = false;
+        }
+        private void SaveCompendiumAs(object sender, RoutedEventArgs e)
+        {
+            string jsontxt = JsonSerializer.Serialize(compendium);
+            SaveFileDialog saveFile = new SaveFileDialog();
+            saveFile.Filter = "MDF Material Compendium (*.mdfcomp)|*.mdfcomp";
+            if (saveFile.ShowDialog() == true)
+            {
+                File.WriteAllText(saveFile.FileName, jsontxt);
+                defs.lastOpenComp = saveFile.FileName;
+                CompendiumChanged = false;
+            }
+
+        }
+
+        private void CompendiumView_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!IsDragging && e.LeftButton == MouseButtonState.Pressed)
+            {
+                if (CompendiumView.SelectedItem != null && CompendiumView.SelectedItem is CompendiumEntry)
+                {
+                    IsDragging = true;
+                    CompendiumEntry entry = (CompendiumEntry)CompendiumView.SelectedItem;
+                    DragDrop.DoDragDrop(CompendiumView, CompendiumView.SelectedValue,
+                        DragDropEffects.Copy);
+                    IsDragging = false;
+                }
+            }
+        }
+
+        private void LibraryView_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(typeof(CompendiumEntry)))
+            {
+                CompendiumEntry entry = (CompendiumEntry)e.Data.GetData(typeof(CompendiumEntry));
+                BinaryReader readFile = HelperFunctions.OpenFileR(entry.MDFPath, Encoding.Unicode);
+                if (readFile != null)
+                {
+                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(entry.MDFPath).Replace(".", ""));
+                    MDFFile ibmdf = new MDFFile(entry.MDFPath, readFile, type);
+                    LibraryEntryHeader libHead = new LibraryEntryHeader(entry.MDFPath);
+                    for (int i = 0; i < ibmdf.Materials.Count; i++)
+                    {
+                        LibraryEntry le = new LibraryEntry(ibmdf.Materials[i].Name, entry.MDFPath);
+                        //le.Foreground = HelperFunctions.GetBrushFromHex("#000000");
+                        libHead.Items.Add(le);
+                    }
+                    lib.entries.Add(libHead);
+                    readFile.Close();
+                    LibraryChanged = true;
+                }
+            }
+        }
+
+        private void LibraryView_DragOver(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(typeof(CompendiumEntry)))
+            {
+                e.Effects = DragDropEffects.None;
             }
         }
     }
@@ -489,6 +767,38 @@ namespace MDF_Manager
                 else if (item is LibraryEntryHeader)
                 {
                     return LibEntryHead;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
+    public class CompSelect : DataTemplateSelector
+    {
+        public DataTemplate CompEntry { get; set; }
+        public DataTemplate CompEntryHead { get; set; }
+        public DataTemplate CompTopLevel { get; set; }
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            if (item != null)
+            {
+                if (item is CompendiumEntry)
+                {
+                    return CompEntry;
+                }
+                else if (item is CompendiumEntryHeader)
+                {
+                    return CompEntryHead;
+                }
+                else if(item is CompendiumTopLevel)
+                {
+                    return CompTopLevel;
                 }
                 else
                 {
