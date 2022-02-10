@@ -122,5 +122,19 @@ namespace MDF_Manager
             }
 
         }
+
+        public static FileStream OpenFileStream(string filename, FileMode mode = FileMode.Create)
+        {
+            try
+            {
+                FileStream fs = new FileStream(filename, mode);
+                return fs;
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("File could not be opened, likely because it is being used by another process.");
+                return null;
+            }
+        }
     }
 }

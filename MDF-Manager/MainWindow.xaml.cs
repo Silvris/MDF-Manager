@@ -724,6 +724,11 @@ namespace MDF_Manager
                 e.Effects = DragDropEffects.None;
             }
         }
+
+        private void MaterialView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
     }
     public class PropertySelect : DataTemplateSelector
     {

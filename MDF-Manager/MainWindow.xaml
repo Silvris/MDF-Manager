@@ -292,7 +292,8 @@
         <TreeView x:Name="CompendiumView" ItemsSource="{Binding compendium.entries}" Width="Auto" Height="Auto" ItemTemplateSelector="{StaticResource CompSelector}" Background="{DynamicResource ForegroundColor}" MouseMove="CompendiumView_MouseMove" Grid.Row="2" Margin="10,50,10,10"/>
         <Label Foreground="{DynamicResource TextColor}" Content="Compendium" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,20,10,10"/>
         <GridSplitter Background="{DynamicResource ForegroundColor}" Width="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.RowSpan="3" Grid.Column="1"  Margin="0,20,0,0"/>
-        <TabControl MinWidth="600" Drop="TabControl_Drop" Background="{Binding ForegroundColor}" AllowDrop="True" Grid.Column="2" Grid.RowSpan="3" x:Name="MaterialView" DragOver="treeView_DragOver" ItemsSource="{Binding MDFs}" ItemTemplate="{StaticResource MDFHeader}" ContentTemplate="{StaticResource MDFMain}" Margin="8,30,8,8">
+        <Rectangle Drop="TabControl_Drop" Fill="{DynamicResource ForegroundColor}" AllowDrop="True" Grid.Column="2" Grid.RowSpan="3" DragOver="treeView_DragOver" Margin="8,30,8,8"/>
+        <TabControl MinWidth="600" Drop="TabControl_Drop" Background="{DynamicResource ForegroundColor}" AllowDrop="True" Grid.Column="2" Grid.RowSpan="3" x:Name="MaterialView" DragOver="treeView_DragOver" ItemsSource="{Binding MDFs}" ItemTemplate="{StaticResource MDFHeader}" ContentTemplate="{StaticResource MDFMain}" SelectionChanged="MaterialView_SelectionChanged" Margin="8,30,8,8">
             <TabControl.Template>
                 <ControlTemplate TargetType="TabControl">
                     <Grid>
