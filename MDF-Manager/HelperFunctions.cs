@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
 
@@ -135,6 +136,14 @@ namespace MDF_Manager
                 MessageBox.Show("File could not be opened, likely because it is being used by another process.");
                 return null;
             }
+        }
+    }
+    static public class StringExtensions
+    {
+        static public string ReplaceInsensitive(this string str, string from, string to)
+        {
+            str = Regex.Replace(str, from, to, RegexOptions.IgnoreCase);
+            return str;
         }
     }
 }

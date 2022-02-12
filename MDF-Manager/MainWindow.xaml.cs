@@ -567,63 +567,76 @@ namespace MDF_Manager
 
         private void ExtendCompendium(OpenFileDialog dialog)
         {
+            //set some error info up here for reference if crash
+            string lastMDF = " ";
+            MDFTypes lastType = MDFTypes.RE2DMC5;
             if (dialog.ShowDialog() == true)
             {
-                string fullPath = dialog.FileName;
-                string searchPath = System.IO.Path.GetDirectoryName(fullPath);
-                EnumerationOptions enops = new EnumerationOptions();
-                enops.RecurseSubdirectories = true;
-                string[] mdfs = System.IO.Directory.GetFiles(searchPath, "*.mdf2.*", enops);//brilliant
-                foreach (string mdf in mdfs)
+                try
                 {
-                    //gonna abuse the fact everything is by reference
-                    MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(mdf.Replace(".stm", "").Replace(".x64", "")).Replace(".", ""));
-                    CompendiumTopLevel parent = null;
-                    switch (type)
+                    string fullPath = dialog.FileName;
+                    string searchPath = System.IO.Path.GetDirectoryName(fullPath);
+                    EnumerationOptions enops = new EnumerationOptions();
+                    enops.RecurseSubdirectories = true;
+                    string[] mdfs = System.IO.Directory.GetFiles(searchPath, "*.mdf2.*", enops);//brilliant
+                    foreach (string mdf in mdfs)
                     {
-                        case MDFTypes.RE7:
-                            parent = compendium.RE7;
-                            break;
-                        case MDFTypes.RE2DMC5:
-                            parent = compendium.RE2DMC5;
-                            break;
-                        case MDFTypes.RE3:
-                            parent = compendium.RE3;
-                            break;
-                        case MDFTypes.MHRiseRE8:
-                            parent = compendium.MHRiseRE8;
-                            break;
-                        default:
-                            break;
-                    }
-                    if (parent != null)
-                    {
-                        BinaryReader br = HelperFunctions.OpenFileR(mdf, Encoding.Unicode);
-                        if (br != null)
+                        //gonna abuse the fact everything is by reference
+                        string sType = System.IO.Path.GetExtension(mdf.ReplaceInsensitive(".stm", "").ReplaceInsensitive(".x64", "")).Replace(".","");
+                        MDFTypes type = (MDFTypes)Convert.ToInt32(sType);
+                        lastMDF = mdf;
+                        lastType = type;
+                        CompendiumTopLevel parent = null;
+                        switch (type)
                         {
-                            MDFFile file = new MDFFile(mdf, br, type);
-                            foreach (Material mat in file.Materials)
+                            case MDFTypes.RE7:
+                                parent = compendium.RE7;
+                                break;
+                            case MDFTypes.RE2DMC5:
+                                parent = compendium.RE2DMC5;
+                                break;
+                            case MDFTypes.RE3:
+                                parent = compendium.RE3;
+                                break;
+                            case MDFTypes.MHRiseRE8:
+                                parent = compendium.MHRiseRE8;
+                                break;
+                            default:
+                                break;
+                        }
+                        if (parent != null)
+                        {
+                            BinaryReader br = HelperFunctions.OpenFileR(mdf, Encoding.Unicode);
+                            if (br != null)
                             {
-                                CompendiumEntryHeader mParent = null;
-                                mParent = parent.FindItem(x => x.MMTRName == System.IO.Path.GetFileNameWithoutExtension(mat.MasterMaterial));
-                                if (mParent == null)
+                                MDFFile file = new MDFFile(mdf, br, type);
+                                foreach (Material mat in file.Materials)
                                 {
-                                    mParent = new CompendiumEntryHeader(System.IO.Path.GetFileNameWithoutExtension(mat.MasterMaterial));
-                                    parent.AddChild(mParent);
-                                }
-                                int check = mParent.FindEntry(mdf);
-                                if (check == -1)
-                                {
-                                    CompendiumEntry ce = new CompendiumEntry(mdf);
-                                    mParent.Items.Add(ce);
+                                    CompendiumEntryHeader mParent = null;
+                                    mParent = parent.FindItem(x => x.MMTRName == System.IO.Path.GetFileNameWithoutExtension(mat.MasterMaterial));
+                                    if (mParent == null)
+                                    {
+                                        mParent = new CompendiumEntryHeader(System.IO.Path.GetFileNameWithoutExtension(mat.MasterMaterial));
+                                        parent.AddChild(mParent);
+                                    }
+                                    int check = mParent.FindEntry(mdf);
+                                    if (check == -1)
+                                    {
+                                        CompendiumEntry ce = new CompendiumEntry(mdf);
+                                        mParent.Items.Add(ce);
+                                    }
                                 }
                             }
-                        }
+                        } 
                     }
-
+                    CompendiumChanged = true;
+                    compendium.Sort();
                 }
-                CompendiumChanged = true;
-                compendium.Sort();
+                catch(Exception ex)
+                {
+                    MessageBox.Show($"An error occurred during reading compendium entries:{ex}\n\n" +
+                        $"Diagnostic Information: MDF:{lastMDF} Version:{lastType}");
+                }
             }
         }
         private void RebaseCompendium(object sender, RoutedEventArgs e)
