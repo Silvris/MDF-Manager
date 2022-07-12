@@ -572,7 +572,7 @@ namespace MDF_Manager.Classes
             bw.Write(propSize);
             bw.Write(Properties.Count);
             bw.Write(Textures.Count);
-            if(type == MDFTypes.MHRiseRE8)
+            if(type >= MDFTypes.MHRiseRE8)
             {
                 bw.Write((long)0);
             }
@@ -580,7 +580,7 @@ namespace MDF_Manager.Classes
             bw.Write(GenerateFlagsSection());
             bw.Write(propHeaderOffset);
             bw.Write(textureOffset);
-            if(type == MDFTypes.MHRiseRE8)
+            if(type >= MDFTypes.MHRiseRE8)
             {
                 bw.Write(stringTableOffset);
             }
