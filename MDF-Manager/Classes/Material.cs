@@ -202,7 +202,7 @@ namespace MDF_Manager.Classes
             {
                 baseVal += 8;
             }
-            else if (type == MDFTypes.MHRiseRE8){
+            else if (type >= MDFTypes.MHRiseRE8){
                 baseVal += 16;
             }
             return baseVal;
