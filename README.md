@@ -9,6 +9,9 @@ The Library is a list of mdfs from which materials can be pulled from and added 
 
 The Compendium is a complete list of mdfs within specified directories, filtered by their version and then the MMTR used. These mdf entries can then be dragged to be added to the library or directly opened within the editor. "Rebase Compendium" will overwrite the current compendium entries with the entries generated from the given directory, while "Expand Compendium" will add all entries from the given directory to the current compendium.
 
+The Batch Converter found under File -> Batch Convert can be used to convert MDFs from one format (such as RE2) to another (RERT). 
+**NOTE: Conversion will only work if the underlying MMTR remain relatively unchanged. If new parameters were added to the MMTR, you *will* need to recreate the MDF.**
+
 Note that this program cannot add new texture bindings or properties to materials, as these are determined by the shader (*.mmtr) and are effectively immutable without 
 knowledge of shader coding.
 
@@ -20,4 +23,4 @@ MDF-Manager project and select "Restore NuGet Packages", then build the project.
 
 # Credits
 * **Che, Darkness, and alphaZomega** - for MDF structure documentation
-* **AsteriskAmpersand** - his mrl3 editor served as a general inspiration for the layout and library functionality
+* **AsteriskAmpersand** - his mrl3 editor served as a general inspiration for the layout and library/compendium functionality
