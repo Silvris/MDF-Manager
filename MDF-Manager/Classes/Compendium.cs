@@ -111,6 +111,8 @@ namespace MDF_Manager.Classes
         public CompendiumTopLevel RE2DMC5 { get; set; }
         public CompendiumTopLevel RE3 { get; set; }
         public CompendiumTopLevel MHRiseRE8 { get; set; }
+        public CompendiumTopLevel RERT { get; set; }
+        public CompendiumTopLevel Sunbreak { get; set; }
 
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
@@ -118,16 +120,45 @@ namespace MDF_Manager.Classes
         }
         public Compendium()
         {
-            RE7 = new CompendiumTopLevel("RE7");
-            RE2DMC5 = new CompendiumTopLevel("RE2/DMC5");
-            RE3 = new CompendiumTopLevel("RE3");
-            MHRiseRE8 = new CompendiumTopLevel("MHRise/RE8");
-            entries = new ObservableCollection<CompendiumTopLevel> { RE7, RE2DMC5, RE3, MHRiseRE8 };
+            RE7 = new CompendiumTopLevel("Version 6 (RE7)");
+            RE2DMC5 = new CompendiumTopLevel("Version 10 (RE2/DMC5)");
+            RE3 = new CompendiumTopLevel("Version 13 (RE3)");
+            MHRiseRE8 = new CompendiumTopLevel("Version 19 (MHRise/RE8)");
+            RERT = new CompendiumTopLevel("Version 21 (RE Raytracing)");
+            Sunbreak = new CompendiumTopLevel("Version 23 (MHRS)");
+            entries = new ObservableCollection<CompendiumTopLevel> { RE7, RE2DMC5, RE3, MHRiseRE8, RERT, Sunbreak };
 
         }
         public void SetEntries(ObservableCollection<CompendiumTopLevel> newEntries)
         {
-            entries = newEntries;
+            foreach (CompendiumTopLevel entry in newEntries)
+            {
+                switch (entry.Game)
+                {
+                    case "RE7":
+                    case "Version 6 (RE7)":
+                        RE7.Items = entry.Items;
+                        break;
+                    case "RE2/DMC5":
+                    case "Version 10 (RE2/DMC5)":
+                        RE2DMC5.Items = entry.Items;
+                        break;
+                    case "RE3":
+                    case "Version 13 (RE3)":
+                        RE3.Items = entry.Items;
+                        break;
+                    case "MHRise/RE8":
+                    case "Version 19 (MHRise/RE8)":
+                        MHRiseRE8.Items = entry.Items;
+                        break;
+                    case "Version 21 (RE Raytracing)":
+                        RERT.Items = entry.Items;
+                        break;
+                    case "Version 23 (MHRS)":
+                        Sunbreak.Items = entry.Items;
+                        break;
+                }
+            }
             OnPropertyChanged("entries");
             Sort();
         }
@@ -146,6 +177,8 @@ namespace MDF_Manager.Classes
             RE2DMC5.Sort();
             RE3.Sort();
             MHRiseRE8.Sort();
+            RERT.Sort();
+            Sunbreak.Sort();
             OnPropertyChanged("entries");
         }
         public event PropertyChangedEventHandler PropertyChanged;

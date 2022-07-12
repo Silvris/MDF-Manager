@@ -71,7 +71,9 @@ namespace MDF_Manager.Classes
         RE7 = 6,
         RE2DMC5 = 10,
         RE3 = 13,
-        MHRiseRE8 = 19
+        MHRiseRE8 = 19,
+        RERT = 21, //Resident Evil raytracing update
+        Sunbreak = 23
     }
 
     public class BooleanHolder : INotifyPropertyChanged
@@ -374,7 +376,7 @@ namespace MDF_Manager.Classes
             int PropBlockSize = br.ReadInt32();
             int PropertyCount = br.ReadInt32();
             int TextureCount = br.ReadInt32();
-            if(type == MDFTypes.MHRiseRE8)
+            if(type >= MDFTypes.MHRiseRE8)
             {
                 br.ReadInt64();
             }
@@ -382,7 +384,7 @@ namespace MDF_Manager.Classes
             ReadFlagsSection(br);
             Int64 PropHeadersOff = br.ReadInt64();
             Int64 TexHeadersOff = br.ReadInt64();
-            if(type == MDFTypes.MHRiseRE8)
+            if(type >= MDFTypes.MHRiseRE8)
             {
                 Int64 StringTableOff = br.ReadInt64();//not at all useful, given everything uses absolute offsets
                 //it's possible that this is an offset for something that is not used by most mdfs, this will need to be looked into

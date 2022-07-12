@@ -27,6 +27,13 @@ namespace MDF_Manager
     /// </summary>
     public partial class MainWindow : Window
     {
+        public static string MDFFilter = "All readable files (*.mdf2)|*.mdf2.6*;*.mdf2.10*;*.mdf2.13*;*.mdf2.19*;*.mdf2.21*;*.mdf2.23*|" +
+            "RE7 Material file (*.mdf2.6)|*.mdf2.6*|" +
+            "RE2/DMC5 Material file (*.mdf2.10)|*.mdf2.10*|" +
+            "RE3 Material file (*.mdf2.13)|*.mdf2.13*|" +
+            "RE8/MHRiseRE8 Material file (*.mdf2.19)|*.mdf2.19*|" +
+            "RE2/3/7 RT-Update Material file (*.mdf2.21)|*.mdf2.21*|" +
+            "MH Rise Sunbreak Material file (*.mdf2.23)|*.mdf2.23*";
         public ObservableCollection<MDFFile> MDFs { get; set; }
         public Defs defs { get; set; }
         public Library lib { get; set; }
@@ -76,9 +83,17 @@ namespace MDF_Manager
                         BinaryReader readFile = HelperFunctions.OpenFileR(defs.lastOpenFiles[i], Encoding.Unicode);
                         if(readFile != null)
                         {
-                            MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(defs.lastOpenFiles[i]).Replace(".", ""));
-                            MDFs.Add(new MDFFile(defs.lastOpenFiles[i], readFile, type));
-                            readFile.Close();
+                            try
+                            {
+                                MDFTypes type = (MDFTypes)Convert.ToInt32(System.IO.Path.GetExtension(defs.lastOpenFiles[i]).Replace(".", ""));
+                                MDFs.Add(new MDFFile(defs.lastOpenFiles[i], readFile, type));
+                                readFile.Close();
+                            }
+                            catch(Exception ex)
+                            {
+                                MessageBox.Show($"Unable to open file {defs.lastOpenFiles[i]} due to an exception: {ex}");
+                                defs.lastOpenFiles[i] = "";
+                            }
                         }
                     }
 
@@ -133,7 +148,7 @@ namespace MDF_Manager
         {
             OpenFileDialog importFile = new OpenFileDialog();
             importFile.Multiselect = false;
-            importFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRiseRE8 Material file (*.19)|*.19";
+            importFile.Filter = MDFFilter;
             if (importFile.ShowDialog() == true)
             {
                 BinaryReader readFile = HelperFunctions.OpenFileR(importFile.FileName, Encoding.Unicode);
@@ -179,7 +194,7 @@ namespace MDF_Manager
                 else
                 {
                     SaveFileDialog saveFile = new SaveFileDialog();
-                    saveFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRiseRE8 Material file (*.19)|*.19";
+                    saveFile.Filter = MDFFilter;
                     saveFile.FileName = System.IO.Path.GetFileName(MDFs[MaterialView.SelectedIndex].Header);
                     if (saveFile.ShowDialog() == true)
                     {
@@ -291,7 +306,7 @@ namespace MDF_Manager
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 for(int i = 0; i < files.Length; i++)
                 {
-                    if (files[i].Contains(".6") || files[i].Contains(".10") || files[i].Contains(".13") || files[i].Contains(".19"))
+                    if (files[i].Contains(".6") || files[i].Contains(".10") || files[i].Contains(".13") || files[i].Contains(".19") || files[i].Contains(".21") || files[i].Contains(".23"))
                     {
                         BinaryReader readFile = HelperFunctions.OpenFileR(files[i], Encoding.Unicode);
                         if(readFile != null)
@@ -337,7 +352,7 @@ namespace MDF_Manager
         {
             OpenFileDialog importFile = new OpenFileDialog();
             importFile.Multiselect = false;
-            importFile.Filter = "All readable files|*.6;*.10;*.13;*.19|RE7 Material file (*.6)|*.6|RE2/DMC5 Material file (*.10)|*.10|RE3 Material file (*.13)|*.13|RE8/MHRiseRE8 Material file (*.19)|*.19";
+            importFile.Filter = MDFFilter;
             if (importFile.ShowDialog() == true)
             {
                 BinaryReader readFile = HelperFunctions.OpenFileR(importFile.FileName, Encoding.Unicode);
@@ -601,6 +616,12 @@ namespace MDF_Manager
                             case MDFTypes.MHRiseRE8:
                                 parent = compendium.MHRiseRE8;
                                 break;
+                            case MDFTypes.RERT:
+                                parent = compendium.RERT;
+                                break;
+                            case MDFTypes.Sunbreak:
+                                parent = compendium.Sunbreak;
+                                break;
                             default:
                                 break;
                         }
@@ -741,6 +762,12 @@ namespace MDF_Manager
         private void MaterialView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
+        }
+
+        private void BatchConvert(object sender, RoutedEventArgs e)
+        {
+            BatchConverter batch = new BatchConverter();
+            batch.Show();
         }
     }
     public class PropertySelect : DataTemplateSelector

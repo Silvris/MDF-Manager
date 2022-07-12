@@ -266,6 +266,7 @@
                 <MenuItem Header="Save" Click="Save"/>
                 <MenuItem Header="Save As" Click="SaveAs"/>
                 <MenuItem Header="Save All" Click="SaveAll"/>
+                <MenuItem Header="Batch Convert" Click="BatchConvert"/>
             </MenuItem>
             <MenuItem Template="{StaticResource MenuItemControlTemplate1}" Background="{DynamicResource ForegroundColor}" Foreground="{DynamicResource TextColor}" Header="Library">
                 <MenuItem Header="New Library File" Click="NewLibrary"/>
