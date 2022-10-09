@@ -113,6 +113,7 @@ namespace MDF_Manager.Classes
         public CompendiumTopLevel MHRiseRE8 { get; set; }
         public CompendiumTopLevel RERT { get; set; }
         public CompendiumTopLevel Sunbreak { get; set; }
+        public CompendiumTopLevel SF6 { get; set; }
 
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
@@ -126,7 +127,8 @@ namespace MDF_Manager.Classes
             MHRiseRE8 = new CompendiumTopLevel("Version 19 (MHRise/RE8)");
             RERT = new CompendiumTopLevel("Version 21 (RE Raytracing)");
             Sunbreak = new CompendiumTopLevel("Version 23 (MHRS)");
-            entries = new ObservableCollection<CompendiumTopLevel> { RE7, RE2DMC5, RE3, MHRiseRE8, RERT, Sunbreak };
+            SF6 = new CompendiumTopLevel("Version 31 (SF6)");
+            entries = new ObservableCollection<CompendiumTopLevel> { RE7, RE2DMC5, RE3, MHRiseRE8, RERT, Sunbreak, SF6 };
 
         }
         public void SetEntries(ObservableCollection<CompendiumTopLevel> newEntries)
@@ -156,6 +158,9 @@ namespace MDF_Manager.Classes
                         break;
                     case "Version 23 (MHRS)":
                         Sunbreak.Items = entry.Items;
+                        break;
+                    case "Version 31 (SF6)":
+                        SF6.Items = entry.Items;
                         break;
                 }
             }

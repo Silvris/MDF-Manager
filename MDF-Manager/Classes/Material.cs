@@ -73,7 +73,8 @@ namespace MDF_Manager.Classes
         RE3 = 13,
         MHRiseRE8 = 19,
         RERT = 21, //Resident Evil raytracing update
-        Sunbreak = 23
+        Sunbreak = 23,
+        SF6 = 31
     }
 
     public class BooleanHolder : INotifyPropertyChanged
@@ -201,6 +202,10 @@ namespace MDF_Manager.Classes
             if(type == MDFTypes.RE7)
             {
                 baseVal += 8;
+            }
+            else if (type >= MDFTypes.SF6)
+            {
+                baseVal += 36;
             }
             else if (type >= MDFTypes.MHRiseRE8){
                 baseVal += 16;
@@ -381,7 +386,15 @@ namespace MDF_Manager.Classes
                 br.ReadInt64();
             }
             ShaderType = (ShadingType)br.ReadInt32();
+            if (type >= MDFTypes.SF6)
+            {
+                br.ReadInt32();
+            }
             ReadFlagsSection(br);
+            if (type >= MDFTypes.SF6)
+            {
+                br.ReadInt64();
+            }
             Int64 PropHeadersOff = br.ReadInt64();
             Int64 TexHeadersOff = br.ReadInt64();
             if(type >= MDFTypes.MHRiseRE8)
@@ -392,6 +405,10 @@ namespace MDF_Manager.Classes
             }
             Int64 PropDataOff = br.ReadInt64();
             Int64 MMTRPathOff = br.ReadInt64();
+            if (type >= MDFTypes.SF6)
+            {
+                br.ReadInt64();
+            }
             Int64 EOM = br.BaseStream.Position;//to return to after reading the rest of the parameters
             Textures = new List<TextureBinding>();
             Properties = new List<IVariableProp>();
@@ -577,7 +594,15 @@ namespace MDF_Manager.Classes
                 bw.Write((long)0);
             }
             bw.Write((uint)ShaderType);
+            if (type >= MDFTypes.SF6)
+            {
+                bw.Write((int)0);
+            }
             bw.Write(GenerateFlagsSection());
+            if (type >= MDFTypes.SF6)
+            {
+                bw.Write((long)0);
+            }
             bw.Write(propHeaderOffset);
             bw.Write(textureOffset);
             if(type >= MDFTypes.MHRiseRE8)
@@ -586,6 +611,10 @@ namespace MDF_Manager.Classes
             }
             bw.Write(propertiesOffset);
             bw.Write(stringTableOffset + strTableOffsets[MMOffsetIndex]);
+            if (type >= MDFTypes.SF6)
+            {
+                bw.Write((long)0);
+            }
             //end of actual material file, now update material offset and write textures/properties
             materialOffset += GetSize(type);
             for(int i = 0; i < Textures.Count; i++)
