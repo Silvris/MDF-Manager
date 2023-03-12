@@ -27,14 +27,15 @@ namespace MDF_Manager
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static string MDFFilter = "All readable files (*.mdf2)|*.mdf2.6*;*.mdf2.10*;*.mdf2.13*;*.mdf2.19*;*.mdf2.21*;*.mdf2.23*;*.mdf2.31*|" +
+        public static string MDFFilter = "All readable files (*.mdf2)|*.mdf2.6*;*.mdf2.10*;*.mdf2.13*;*.mdf2.19*;*.mdf2.21*;*.mdf2.23*;*.mdf2.31*;*.mdf2.32*|" +
             "RE7 Material file (*.mdf2.6)|*.mdf2.6*|" +
             "RE2/DMC5 Material file (*.mdf2.10)|*.mdf2.10*|" +
             "RE3 Material file (*.mdf2.13)|*.mdf2.13*|" +
             "RE8/MHRiseRE8 Material file (*.mdf2.19)|*.mdf2.19*|" +
             "RE2/3/7 RT-Update Material file (*.mdf2.21)|*.mdf2.21*|" +
             "MH Rise Sunbreak Material file (*.mdf2.23)|*.mdf2.23*|" +
-            "Street Fighter 6 Material file (*.mdf2.31)|*.mdf2.31*";
+            "Street Fighter 6 Material file (*.mdf2.31)|*.mdf2.31*|" +
+            "Resident Evil 4 Material file (*.mdf2.32)|*.mdf2.32*";
         public ObservableCollection<MDFFile> MDFs { get; set; }
         public Defs defs { get; set; }
         public Library lib { get; set; }
