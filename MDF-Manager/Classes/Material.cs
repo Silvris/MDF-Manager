@@ -74,7 +74,8 @@ namespace MDF_Manager.Classes
         MHRiseRE8 = 19,
         RERT = 21, //Resident Evil raytracing update
         Sunbreak = 23,
-        SF6 = 31
+        SF6 = 31,
+        RE4 = 32
     }
 
     public class BooleanHolder : INotifyPropertyChanged
@@ -204,6 +205,10 @@ namespace MDF_Manager.Classes
                 baseVal += 8;
             }
             else if (type >= MDFTypes.SF6)
+            {
+                baseVal += 36;
+            }
+            else if (type >= MDFTypes.RE4)
             {
                 baseVal += 36;
             }
@@ -390,8 +395,16 @@ namespace MDF_Manager.Classes
             {
                 br.ReadInt32();
             }
+            else if (type >= MDFTypes.RE4)
+            {
+                br.ReadInt32();
+            }
             ReadFlagsSection(br);
             if (type >= MDFTypes.SF6)
+            {
+                br.ReadInt64();
+            }
+            else if (type >= MDFTypes.RE4)
             {
                 br.ReadInt64();
             }
@@ -406,6 +419,10 @@ namespace MDF_Manager.Classes
             Int64 PropDataOff = br.ReadInt64();
             Int64 MMTRPathOff = br.ReadInt64();
             if (type >= MDFTypes.SF6)
+            {
+                br.ReadInt64();
+            }
+            else if (type >= MDFTypes.RE4)
             {
                 br.ReadInt64();
             }
@@ -598,8 +615,16 @@ namespace MDF_Manager.Classes
             {
                 bw.Write((int)0);
             }
+            if (type >= MDFTypes.RE4)
+            {
+                bw.Write((int)0);
+            }
             bw.Write(GenerateFlagsSection());
             if (type >= MDFTypes.SF6)
+            {
+                bw.Write((long)0);
+            }
+            if (type >= MDFTypes.RE4)
             {
                 bw.Write((long)0);
             }
@@ -612,6 +637,10 @@ namespace MDF_Manager.Classes
             bw.Write(propertiesOffset);
             bw.Write(stringTableOffset + strTableOffsets[MMOffsetIndex]);
             if (type >= MDFTypes.SF6)
+            {
+                bw.Write((long)0);
+            }
+            if (type >= MDFTypes.RE4)
             {
                 bw.Write((long)0);
             }
