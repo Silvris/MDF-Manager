@@ -615,7 +615,7 @@ namespace MDF_Manager.Classes
             {
                 bw.Write((int)0);
             }
-            if (type >= MDFTypes.RE4)
+            else if (type >= MDFTypes.RE4)
             {
                 bw.Write((int)0);
             }
@@ -624,7 +624,7 @@ namespace MDF_Manager.Classes
             {
                 bw.Write((long)0);
             }
-            if (type >= MDFTypes.RE4)
+            else if (type >= MDFTypes.RE4)
             {
                 bw.Write((long)0);
             }
@@ -640,7 +640,7 @@ namespace MDF_Manager.Classes
             {
                 bw.Write((long)0);
             }
-            if (type >= MDFTypes.RE4)
+            else if (type >= MDFTypes.RE4)
             {
                 bw.Write((long)0);
             }
