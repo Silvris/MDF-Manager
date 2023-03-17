@@ -57,13 +57,16 @@ namespace MDF_Manager.Classes
         GUI = 10,
         GUIMesh = 11,
         GUIMeshTransparent = 12,
-        ExpensiveTransparent =13,
+        ExpensiveTransparent = 13,
         Forward = 14,
         RenderTarget = 15,
         PostProcess = 16,
         PrimitiveMaterial = 17,
         PrimitiveSolidMaterial = 18,
-        SpineMaterial = 19
+        SpineMaterial = 19,
+        //ReflectiveTransparent = 20 maybe a New Shading Type, only found in RE4?
+        //Leon's mdf is crashing if the material "GloveGlass" is in the MDF.
+        //natives\STM\_Chainsaw\Character\ch\cha0\cha002\00\cha002_00.mdf2.32
     }
 
     public enum MDFTypes
@@ -72,6 +75,7 @@ namespace MDF_Manager.Classes
         RE2DMC5 = 10,
         RE3 = 13,
         MHRiseRE8 = 19,
+        REV = 20,   //REVerse
         RERT = 21, //Resident Evil raytracing update
         Sunbreak = 23,
         SF6 = 31,
