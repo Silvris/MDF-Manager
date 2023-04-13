@@ -309,7 +309,7 @@ namespace MDF_Manager
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 for(int i = 0; i < files.Length; i++)
                 {
-                    if (files[i].Contains(".6") || files[i].Contains(".10") || files[i].Contains(".13") || files[i].Contains(".19") || files[i].Contains(".21") || files[i].Contains(".23"))
+                    if (files[i].Contains(".6") || files[i].Contains(".10") || files[i].Contains(".13") || files[i].Contains(".19") || files[i].Contains(".20") || files[i].Contains(".21") || files[i].Contains(".23") || files[i].Contains(".31") || files[i].Contains(".32"))
                     {
                         BinaryReader readFile = HelperFunctions.OpenFileR(files[i], Encoding.Unicode);
                         if(readFile != null)
@@ -624,6 +624,12 @@ namespace MDF_Manager
                                 break;
                             case MDFTypes.Sunbreak:
                                 parent = compendium.Sunbreak;
+                                break;
+                            case MDFTypes.SF6:
+                                parent = compendium.SF6;
+                                break;
+                            case MDFTypes.RE4:
+                                parent = compendium.RE4;
                                 break;
                             default:
                                 break;
