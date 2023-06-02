@@ -57,13 +57,16 @@ namespace MDF_Manager.Classes
         GUI = 10,
         GUIMesh = 11,
         GUIMeshTransparent = 12,
-        ExpensiveTransparent =13,
+        ExpensiveTransparent = 13,
         Forward = 14,
         RenderTarget = 15,
         PostProcess = 16,
         PrimitiveMaterial = 17,
         PrimitiveSolidMaterial = 18,
-        SpineMaterial = 19
+        SpineMaterial = 19,
+        //ReflectiveTransparent = 20 maybe a New Shading Type, only found in RE4?
+        //Leon's mdf is crashing if the material "GloveGlass" is in the MDF.
+        //natives\STM\_Chainsaw\Character\ch\cha0\cha002\00\cha002_00.mdf2.32
     }
 
     public enum MDFTypes
@@ -72,8 +75,11 @@ namespace MDF_Manager.Classes
         RE2DMC5 = 10,
         RE3 = 13,
         MHRiseRE8 = 19,
+        REV = 20,   //REVerse
         RERT = 21, //Resident Evil raytracing update
-        Sunbreak = 23
+        Sunbreak = 23,
+        SF6 = 31,
+        RE4 = 32
     }
 
     public class BooleanHolder : INotifyPropertyChanged
@@ -201,6 +207,10 @@ namespace MDF_Manager.Classes
             if(type == MDFTypes.RE7)
             {
                 baseVal += 8;
+            }
+            else if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            {
+                baseVal += 36;
             }
             else if (type >= MDFTypes.MHRiseRE8){
                 baseVal += 16;
@@ -381,7 +391,15 @@ namespace MDF_Manager.Classes
                 br.ReadInt64();
             }
             ShaderType = (ShadingType)br.ReadInt32();
+            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            {
+                br.ReadInt32();
+            }
             ReadFlagsSection(br);
+            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            {
+                br.ReadInt64();
+            }
             Int64 PropHeadersOff = br.ReadInt64();
             Int64 TexHeadersOff = br.ReadInt64();
             if(type >= MDFTypes.MHRiseRE8)
@@ -392,6 +410,10 @@ namespace MDF_Manager.Classes
             }
             Int64 PropDataOff = br.ReadInt64();
             Int64 MMTRPathOff = br.ReadInt64();
+            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            {
+                br.ReadInt64();
+            }
             Int64 EOM = br.BaseStream.Position;//to return to after reading the rest of the parameters
             Textures = new List<TextureBinding>();
             Properties = new List<IVariableProp>();
@@ -577,7 +599,15 @@ namespace MDF_Manager.Classes
                 bw.Write((long)0);
             }
             bw.Write((uint)ShaderType);
+            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            {
+                bw.Write((int)0);
+            }
             bw.Write(GenerateFlagsSection());
+            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            {
+                bw.Write((long)0);
+            }
             bw.Write(propHeaderOffset);
             bw.Write(textureOffset);
             if(type >= MDFTypes.MHRiseRE8)
@@ -586,6 +616,10 @@ namespace MDF_Manager.Classes
             }
             bw.Write(propertiesOffset);
             bw.Write(stringTableOffset + strTableOffsets[MMOffsetIndex]);
+            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            {
+                bw.Write((long)0);
+            }
             //end of actual material file, now update material offset and write textures/properties
             materialOffset += GetSize(type);
             for(int i = 0; i < Textures.Count; i++)
