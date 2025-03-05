@@ -79,7 +79,8 @@ namespace MDF_Manager.Classes
         RERT = 21, //Resident Evil raytracing update
         Sunbreak = 23,
         SF6 = 31,
-        RE4 = 32
+        RE4 = 32,
+        MHWS = 45,
     }
 
     public class BooleanHolder : INotifyPropertyChanged
@@ -133,6 +134,7 @@ namespace MDF_Manager.Classes
         public byte TessFactor { get; set; }
         public byte PhongFactor { get; set; }//shrug bytes are unsigned by default in C#
         public ObservableCollection<BooleanHolder> flags { get; set; }
+        public List<GPBFReference> GBPFReferences { get; set; }
         public List<TextureBinding> Textures { get; set; }
         public List<IVariableProp> Properties { get; set; }
 
@@ -386,31 +388,36 @@ namespace MDF_Manager.Classes
             int PropBlockSize = br.ReadInt32();
             int PropertyCount = br.ReadInt32();
             int TextureCount = br.ReadInt32();
+            int GPBFCount = -1;
             if(type >= MDFTypes.MHRiseRE8)
             {
-                br.ReadInt64();
+                GPBFCount = br.ReadInt32();
+                int GPBFCount2 = br.ReadInt32();
+                if (GPBFCount != GPBFCount2)
+                {
+                    throw new Exception("GPBF Counts did not match!");
+                }
             }
             ShaderType = (ShadingType)br.ReadInt32();
-            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            if (type >= MDFTypes.SF6)
             {
                 br.ReadInt32();
             }
             ReadFlagsSection(br);
-            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            if (type >= MDFTypes.SF6)
             {
                 br.ReadInt64();
             }
             Int64 PropHeadersOff = br.ReadInt64();
             Int64 TexHeadersOff = br.ReadInt64();
+            Int64 GPBFOff = -1;
             if(type >= MDFTypes.MHRiseRE8)
             {
-                Int64 StringTableOff = br.ReadInt64();//not at all useful, given everything uses absolute offsets
-                //it's possible that this is an offset for something that is not used by most mdfs, this will need to be looked into
-                //given the extra Int64, I find this very likely
+                GPBFOff = br.ReadInt64();
             }
             Int64 PropDataOff = br.ReadInt64();
             Int64 MMTRPathOff = br.ReadInt64();
-            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            if (type >= MDFTypes.SF6)
             {
                 br.ReadInt64();
             }

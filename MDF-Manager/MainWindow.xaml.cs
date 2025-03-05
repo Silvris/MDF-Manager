@@ -72,9 +72,17 @@ namespace MDF_Manager
             }
             if(defs.lastOpenComp != "")
             {
-                string jsontxt = File.ReadAllText(defs.lastOpenComp);
-                Compendium comp = JsonSerializer.Deserialize<Compendium>(jsontxt);
-                compendium.SetEntries(comp.entries);
+                try
+                {
+                    string jsontxt = File.ReadAllText(defs.lastOpenComp);
+                    Compendium comp = JsonSerializer.Deserialize<Compendium>(jsontxt);
+                    compendium.SetEntries(comp.entries);
+                }
+                catch (Exception ex)
+                {
+                    compendium.ClearList();
+                }
+
             }
             MDFs = new ObservableCollection<MDFFile>();
             if(defs.lastOpenFiles.Count > 0)

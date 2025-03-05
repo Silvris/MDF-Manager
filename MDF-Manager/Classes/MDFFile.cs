@@ -116,6 +116,30 @@ namespace MDF_Manager.Classes
                     }
                 }
             }
+            for (int i = 0; i < Materials.Count; i++)
+            {
+                for (int j = 0; j < Materials[i].GPBFReferences.Count; j++)
+                {
+                    if (!strings.Contains(Materials[i].GPBFReferences[j].name))
+                    {
+                        strings.Add(Materials[i].GPBFReferences[j].name);
+                        Materials[i].GPBFReferences[j].NameOffsetIndex = strings.Count - 1;
+                    }
+                    else
+                    {
+                        Materials[i].GPBFReferences[j].NameOffsetIndex = strings.FindIndex(name => name == Materials[i].GPBFReferences[j].name);
+                    }
+                    if (!strings.Contains(Materials[i].GPBFReferences[j].path))
+                    {
+                        strings.Add(Materials[i].GPBFReferences[j].path);
+                        Materials[i].GPBFReferences[j].PathOffsetIndex = strings.Count - 1;
+                    }
+                    else
+                    {
+                        Materials[i].GPBFReferences[j].PathOffsetIndex = strings.FindIndex(name => name == Materials[i].GPBFReferences[j].path);
+                    }
+                }
+            }
             List<byte> outputBuff = new List<byte>();
             offsets.Add(0);
             for(int i = 0; i < strings.Count; i++)
@@ -139,12 +163,13 @@ namespace MDF_Manager.Classes
             bw.Write((short)1);
             bw.Write((short)Materials.Count);
             bw.Write((long)0);
-            //before going further, we need accurate lengths for 4 of the 5 main sections of the mdf
+            //before going further, we need accurate lengths for 5 of the 6 main sections of the mdf
             /*
              * header -set size
              * materials - set size
              * textures - set size
              * propHeaders - set size
+             * gpbfs - set size
              * stringtable - generate in a separate function
              * prop values - based off of prop headers
              */
