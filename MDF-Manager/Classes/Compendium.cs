@@ -116,6 +116,7 @@ namespace MDF_Manager.Classes
         public CompendiumTopLevel Sunbreak { get; set; }
         public CompendiumTopLevel SF6 { get; set; }
         public CompendiumTopLevel RE4 { get; set; }
+        public CompendiumTopLevel MHWS { get; set; }
 
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
@@ -132,7 +133,8 @@ namespace MDF_Manager.Classes
             Sunbreak = new CompendiumTopLevel("Version 23 (MHRS)");
             SF6 = new CompendiumTopLevel("Version 31 (SF6)");
             RE4 = new CompendiumTopLevel("Version 32 (RE4)");
-            entries = new ObservableCollection<CompendiumTopLevel> { RE7, RE2DMC5, RE3, MHRiseRE8, REV, RERT, Sunbreak, SF6, RE4 };
+            MHWS = new CompendiumTopLevel("Version 45 (MHWS)");
+            entries = new ObservableCollection<CompendiumTopLevel> { RE7, RE2DMC5, RE3, MHRiseRE8, REV, RERT, Sunbreak, SF6, RE4, MHWS };
 
         }
         public void SetEntries(ObservableCollection<CompendiumTopLevel> newEntries)
@@ -172,6 +174,9 @@ namespace MDF_Manager.Classes
                     case "Version 32 (RE4)":
                         RE4.Items = entry.Items;
                         break;
+                    case "Version 45 (MHWS)":
+                        MHWS.Items = entry.Items;
+                        break;
                 }
             }
             OnPropertyChanged("entries");
@@ -197,6 +202,7 @@ namespace MDF_Manager.Classes
             Sunbreak.Sort();
             SF6.Sort();
             RE4.Sort();
+            MHWS.Sort();
             OnPropertyChanged("entries");
         }
         public event PropertyChangedEventHandler PropertyChanged;

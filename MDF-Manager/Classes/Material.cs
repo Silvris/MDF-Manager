@@ -64,7 +64,7 @@ namespace MDF_Manager.Classes
         PrimitiveMaterial = 17,
         PrimitiveSolidMaterial = 18,
         SpineMaterial = 19,
-        //ReflectiveTransparent = 20 maybe a New Shading Type, only found in RE4?
+        ReflectiveTransparent = 20 //maybe a New Shading Type, only found in RE4?
         //Leon's mdf is crashing if the material "GloveGlass" is in the MDF.
         //natives\STM\_Chainsaw\Character\ch\cha0\cha002\00\cha002_00.mdf2.32
     }
@@ -134,7 +134,7 @@ namespace MDF_Manager.Classes
         public byte TessFactor { get; set; }
         public byte PhongFactor { get; set; }//shrug bytes are unsigned by default in C#
         public ObservableCollection<BooleanHolder> flags { get; set; }
-        public List<GPBFReference> GBPFReferences { get; set; }
+        public List<GPBFReference> GPBFReferences { get; set; }
         public List<TextureBinding> Textures { get; set; }
         public List<IVariableProp> Properties { get; set; }
 
@@ -162,6 +162,27 @@ namespace MDF_Manager.Classes
             br.BaseStream.Seek(EOT, SeekOrigin.Begin);
             TextureBinding tb = new TextureBinding(TextureType,FilePath);
             return tb;
+        }
+
+        public GPBFReference ReadGPBFReference(BinaryReader br, MDFTypes type)
+        {
+            if (type >= MDFTypes.MHRiseRE8)
+            {
+                Int64 NameOffset = br.ReadInt64();
+                uint NameUTF16Hash = br.ReadUInt32();
+                uint NameASCIIHash = br.ReadUInt32();
+                Int64 PathOffset = br.ReadInt64();
+                uint unkn0 = br.ReadUInt32();
+                uint unkn1 = br.ReadUInt32();
+                Int64 EOT = br.BaseStream.Position;
+                br.BaseStream.Seek(NameOffset, SeekOrigin.Begin);
+                string Name = HelperFunctions.ReadUniNullTerminatedString(br);
+                br.BaseStream.Seek(PathOffset, SeekOrigin.Begin);
+                string FilePath = HelperFunctions.ReadUniNullTerminatedString(br);
+                br.BaseStream.Seek(EOT, SeekOrigin.Begin);
+                return new GPBFReference(Name, FilePath);
+            }
+            else throw new Exception("Cannot create GPBF for MDF version below 19");
         }
 
         public IVariableProp ReadProperty(BinaryReader br, Int64 dataOff, MDFTypes type, int matIndex, int propIndex)
@@ -210,7 +231,7 @@ namespace MDF_Manager.Classes
             {
                 baseVal += 8;
             }
-            else if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            else if (type >= MDFTypes.SF6)
             {
                 baseVal += 36;
             }
@@ -423,6 +444,7 @@ namespace MDF_Manager.Classes
             }
             Int64 EOM = br.BaseStream.Position;//to return to after reading the rest of the parameters
             Textures = new List<TextureBinding>();
+            GPBFReferences = new List<GPBFReference>();
             Properties = new List<IVariableProp>();
             //now we'll go grab names and values
             br.BaseStream.Seek(MatNameOffset, SeekOrigin.Begin);
@@ -437,6 +459,15 @@ namespace MDF_Manager.Classes
                 Textures.Add(ReadTextureBinding(br,type));
             }
 
+            //read gpbf
+            if (GPBFOff > 0) {
+                br.BaseStream.Seek(GPBFOff, SeekOrigin.Begin);
+                for(int i = 0; i < GPBFCount; i++)
+                {
+                    GPBFReferences.Add(ReadGPBFReference(br, type));
+                }
+            }
+
             //read properties
             br.BaseStream.Seek(PropHeadersOff, SeekOrigin.Begin);
             for(int i = 0; i < PropertyCount; i++)
@@ -445,6 +476,7 @@ namespace MDF_Manager.Classes
             }
             br.BaseStream.Seek(EOM,SeekOrigin.Begin);
         }
+
         public byte[] GenerateFlagsSection()
         {
             AlphaFlags flags1 = 0;
@@ -580,7 +612,7 @@ namespace MDF_Manager.Classes
                 Properties[i].indexes[0] = index;
             }
         }
-        public void Export(BinaryWriter bw, MDFTypes type, ref long materialOffset, ref long textureOffset, ref long propHeaderOffset, long stringTableOffset, List<int> strTableOffsets, ref long propertiesOffset)
+        public void Export(BinaryWriter bw, MDFTypes type, ref long materialOffset, ref long textureOffset, ref long propHeaderOffset, ref long gpbfOffset, long stringTableOffset, List<int> strTableOffsets, ref long propertiesOffset)
         {
             bw.BaseStream.Seek(materialOffset,SeekOrigin.Begin);
             bw.Write(stringTableOffset + strTableOffsets[NameOffsetIndex]);
@@ -603,15 +635,16 @@ namespace MDF_Manager.Classes
             bw.Write(Textures.Count);
             if(type >= MDFTypes.MHRiseRE8)
             {
-                bw.Write((long)0);
+                bw.Write(GPBFReferences.Count);
+                bw.Write(GPBFReferences.Count);
             }
             bw.Write((uint)ShaderType);
-            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            if (type >= MDFTypes.SF6)
             {
                 bw.Write((int)0);
             }
             bw.Write(GenerateFlagsSection());
-            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            if (type >= MDFTypes.SF6)
             {
                 bw.Write((long)0);
             }
@@ -619,11 +652,11 @@ namespace MDF_Manager.Classes
             bw.Write(textureOffset);
             if(type >= MDFTypes.MHRiseRE8)
             {
-                bw.Write(stringTableOffset);
+                bw.Write(gpbfOffset);
             }
             bw.Write(propertiesOffset);
             bw.Write(stringTableOffset + strTableOffsets[MMOffsetIndex]);
-            if (type >= MDFTypes.SF6 || type >= MDFTypes.RE4)
+            if (type >= MDFTypes.SF6)
             {
                 bw.Write((long)0);
             }
@@ -633,6 +666,12 @@ namespace MDF_Manager.Classes
             {
                 Textures[i].Export(bw, type, ref textureOffset, stringTableOffset, strTableOffsets);
             }
+
+            for(int i = 0; i < GPBFReferences.Count; i++)
+            {
+                GPBFReferences[i].Export(bw, type, ref gpbfOffset, stringTableOffset, strTableOffsets);
+            }
+
             long basePropOffset = propertiesOffset;//subtract by current prop offset to make inner offset
             for(int i = 0; i < Properties.Count; i++)
             {

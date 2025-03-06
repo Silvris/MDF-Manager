@@ -27,7 +27,7 @@ namespace MDF_Manager
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static string MDFFilter = "All readable files (*.mdf2)|*.mdf2.6*;*.mdf2.10*;*.mdf2.13*;*.mdf2.19*;*.mdf2.20*;*.mdf2.21*;*.mdf2.23*;*.mdf2.31*;*.mdf2.32*|" +
+        public static string MDFFilter = "All readable files (*.mdf2)|*.mdf2.6*;*.mdf2.10*;*.mdf2.13*;*.mdf2.19*;*.mdf2.20*;*.mdf2.21*;*.mdf2.23*;*.mdf2.31*;*.mdf2.32*;*.mdf2.45;*.mdf2|" +
             "RE7 Material file (*.mdf2.6)|*.mdf2.6*|" +
             "RE2/DMC5 Material file (*.mdf2.10)|*.mdf2.10*|" +
             "RE3 Material file (*.mdf2.13)|*.mdf2.13*|" +
@@ -36,7 +36,8 @@ namespace MDF_Manager
             "RE2/3/7 RT-Update Material file (*.mdf2.21)|*.mdf2.21*|" +
             "MH Rise Sunbreak Material file (*.mdf2.23)|*.mdf2.23*|" +
             "Street Fighter 6 Material file (*.mdf2.31)|*.mdf2.31*|" +
-            "Resident Evil 4 Material file (*.mdf2.32)|*.mdf2.32*";
+            "Resident Evil 4 Material file (*.mdf2.32)|*.mdf2.32*|" +
+            "Monster Hunter Wilds Material file (*.mdf2.45)|*.mdf2.45*";
         public ObservableCollection<MDFFile> MDFs { get; set; }
         public Defs defs { get; set; }
         public Library lib { get; set; }
@@ -627,6 +628,9 @@ namespace MDF_Manager
                             case MDFTypes.MHRiseRE8:
                                 parent = compendium.MHRiseRE8;
                                 break;
+                            case MDFTypes.REV:
+                                parent = compendium.REV;
+                                break;
                             case MDFTypes.RERT:
                                 parent = compendium.RERT;
                                 break;
@@ -638,6 +642,9 @@ namespace MDF_Manager
                                 break;
                             case MDFTypes.RE4:
                                 parent = compendium.RE4;
+                                break;
+                            case MDFTypes.MHWS:
+                                parent = compendium.MHWS;
                                 break;
                             default:
                                 break;

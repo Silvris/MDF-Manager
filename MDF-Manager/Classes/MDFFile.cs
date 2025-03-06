@@ -202,17 +202,25 @@ namespace MDF_Manager.Classes
             {
                 propHeadersOffset++;
             }
-            long stringTableOffset = propHeadersOffset;
+            long gpbfOffset = propHeadersOffset;
             for (int i = 0; i < Materials.Count; i++)
             {
                 for (int j = 0; j < Materials[i].Properties.Count; j++)
                 {
-                    stringTableOffset += Materials[i].Properties[j].GetPropHeaderSize();
+                    gpbfOffset += Materials[i].Properties[j].GetPropHeaderSize();
                 }
             }
-            while ((stringTableOffset % 16) != 0)
+            while ((gpbfOffset % 16) != 0)
             {
-                stringTableOffset++;
+                gpbfOffset++;
+            }
+            long stringTableOffset = gpbfOffset;
+            for (int i = 0; i < Materials.Count; i++)
+            {
+                for (int j = 0; j < Materials[i].GPBFReferences.Count; j++)
+                {
+                    stringTableOffset += Materials[i].GPBFReferences[j].GetSize(type);
+                }
             }
             long propertiesOffset = stringTableOffset + stringTable.Count;
             while ((propertiesOffset % 16) != 0)
@@ -226,7 +234,7 @@ namespace MDF_Manager.Classes
             }
             for (int i = 0; i < Materials.Count; i++)
             {
-                Materials[i].Export(bw,type, ref materialOffset, ref textureOffset, ref propHeadersOffset, stringTableOffset, strTableOffsets, ref propertiesOffset);
+                Materials[i].Export(bw,type, ref materialOffset, ref textureOffset, ref propHeadersOffset, ref gpbfOffset, stringTableOffset, strTableOffsets, ref propertiesOffset);
             }
         }
         public static IList<ShadingType> ShadingTypes

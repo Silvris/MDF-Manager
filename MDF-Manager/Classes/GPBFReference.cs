@@ -17,9 +17,14 @@ namespace MDF_Manager.Classes
         public static int Unkn0 { get => 0; }
         public static int Unkn1 { get => 1; }
 
+        public GPBFReference(string name, string path) {
+            this.name = name;
+            this.path = path;
+        }
+
         public void Export(BinaryWriter bw, MDFTypes type, ref long offset, long stringTableOffset, List<int> strTableOffs)
         {
-            if (type < MDFTypes.MHWS) return;
+            if (type < MDFTypes.MHRiseRE8) return;
             bw.BaseStream.Seek(offset, SeekOrigin.Begin);
             bw.Write(stringTableOffset + strTableOffs[NameOffsetIndex]);
             bw.Write(HelperFunctions.Murmur3Hash(Encoding.Unicode.GetBytes(name)));
